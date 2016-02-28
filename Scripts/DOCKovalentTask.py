@@ -6,16 +6,14 @@ sys.path.append("/home/labs/londonir/danielza/CovaLib")
 from Code import *
 
 def main(name, argv):
-	if (len(argv) != 5):
+	if (len(argv) < 2 or len(argv) > 3):
 		print_usage(name)
 		return
 	
-	prepare_job = DOCK_Prepare.DOCK_Prepare(*argv)
-	prepare_job.blaster()
-	prepare_job.changeIndock()
+	docking_job = DOCKovalent.DOCKovalent(*argv)
 
 def print_usage(name):
-	print "Usage : " + name + " <receptor> <ligand> <covalent_residue> <covalent_index> <atom_to_remove>"
+	print "Usage : " + name + " <folder name> <compound> <library (default = False)>"
 
 if __name__ == "__main__":
 	main(sys.argv[0], sys.argv[1:])
