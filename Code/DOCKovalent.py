@@ -41,7 +41,7 @@ class DOCKovalent:
             shutil.copy(INDOCK_old, INDOCK)
     def softlink(self):
         files = "dockfiles"
-        os.symlink(self.folder + files, self.name + files)
+        PyUtils.create_softlink(self.folder + files, self.name + files)
     def DOCK(self):
         if(self.library):
             subprocess.call([Paths.DOCKBASE + "docking/setup/setup_db2.csh", self.compound])
@@ -51,5 +51,5 @@ class DOCKovalent:
         else:
             subprocess.call([self.dock_command])
     def combineResults(self):
-        subprocess.call([Path.DOCKBASE + "analysis/extract_all.py", "--done"])
-        subprocess.call([Path.DOCKBASE + "analysis/getposes.py"])
+        subprocess.call([Paths.DOCKBASE + "analysis/extract_all.py", "--done"])
+        subprocess.call([Paths.DOCKBASE + "analysis/getposes.py"])

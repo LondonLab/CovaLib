@@ -1,1 +1,1 @@
-__all__ = ["DOCK_Prepare", "DOCKovalent", "PyUtils"]
+__all__ = ["DOCK_Prepare", "DOCKovalent", "PyUtils", "Cluster", "Paths"]
