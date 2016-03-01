@@ -1,0 +1,55 @@
+#Written by Daniel Zaidman
+#Code review by 
+
+import shutil
+import subprocess
+import os
+import Paths
+import PyUtils
+import Cluster
+
+class DOCKovalent:
+    def __init__(self, folder_name, compound, library = False):
+	self.folder = os.getcwd() + "/"
+        self.name = self.folder + folder_name + "/"
+        self.compound = os.path.abspath(compound)
+        self.library = library
+        PyUtils.create_folder(self.name)
+        self.copyIndock()
+        self.softlink()
+        os.chdir(self.name)
+        self.dock_command = Paths.DOCKBASE + "docking/DOCK/src/i386/dock64"
+        self.DOCK()
+    #Inner functions
+    def copyIndock(self):
+        INDOCK_old = self.folder + "INDOCK"
+        INDOCK = self.name + "INDOCK"
+        shutil.copy(INDOCK_old, INDOCK)
+        if(not self.library):
+            old = open(INDOCK_old, 'r')
+            new = open(INDOCK, 'w')
+            for i in range(3):
+                line = old.readline()
+                new.write(line)
+            line = old.readline()
+            new.write(line[:-21] + self.compound + "\n")
+            for line in old:
+                new.write(line)
+            old.close()
+            new.close()
+        else:
+            shutil.copy(INDOCK_old, INDOCK)
+    def softlink(self):
+        files = "dockfiles"
+        PyUtils.create_softlink(self.folder + files, self.name + files)
+    def DOCK(self):
+        if(self.library):
+            subprocess.call([Paths.DOCKBASE + "docking/setup/setup_db2.csh", self.compound])
+            clu = Cluster.Cluster("CHEM")
+            clu.runJobs("dirlist", self.dock_command)
+            self.combineResults()
+        else:
+            subprocess.call([self.dock_command])
+    def combineResults(self):
+        subprocess.call([Paths.DOCKBASE + "analysis/extract_all.py", "--done"])
+        subprocess.call([Paths.DOCKBASE + "analysis/getposes.py"])
