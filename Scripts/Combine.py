@@ -14,7 +14,7 @@ def main(name, argv):
 	combineResults(argv[0])
 
 def print_usage(name):
-	print "Usage : " + name + " <folder name> <compound> <library (default = False)>"
+	print "Usage : " + name + " <folder name>"
 
 def combineResults(folder_name):
 	os.chdir(folder_name)
