@@ -1,0 +1,25 @@
+#input: pdbID_list,covalent_residue,covalent_index,atom_to_remove, folder_of_mol2_files
+import sys,os
+sys.path.append("/home/labs/londonir/danielza/CovaLib")
+from Code import *
+import subprocess
+def main(name, argv):
+	#create a folder for each pdbID
+        PDB_list = open(os.getcwd()+'/'+argv[0],'r').readlines()
+	for i in range(len(PDB_list)):
+                PDBid = PDB_list[i].strip()
+		PyUtils.create_folder(os.getcwd()+"/"+PDBid)
+                os.chdir(PDBid)
+                cmd = ["~/../scripts/pdbUtil/getPdb.pl"+" -id "+PDBid]
+                subprocess.call(cmd,shell=True)
+                os.chdir("..")
+
+if __name__ == "__main__":
+	main(sys.argv[0], sys.argv[1:])
+
+
+#create a folder pdbID
+
+
+#get pdb from web
+#subprocess.call(["~/../scripts/pdbUtil/getPdb.pl", "-id", "pdbID"])
