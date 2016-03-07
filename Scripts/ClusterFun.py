@@ -1,0 +1,19 @@
+#Written by Daniel Zaidman
+#Code review by 
+
+import sys,os,math
+sys.path.append("/home/labs/londonir/danielza/CovaLib")
+from Code import *
+
+def main(name, argv):
+        if(not len(argv) == 3):
+                print_usage(name)
+                return
+        clu = Cluster.Cluster(argv[0])
+        clu.runJobs(argv[1], argv[2])
+
+def print_usage(name):
+        print "Usage : " + name + " <Cluster type (CHEM)> <dirlist> <command>"
+
+if __name__ == "__main__":
+	main(sys.argv[0], sys.argv[1:])

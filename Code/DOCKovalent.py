@@ -47,7 +47,7 @@ class DOCKovalent:
             subprocess.call([Paths.DOCKBASE + "docking/setup/setup_db2.csh", self.compound])
             clu = Cluster.Cluster("CHEM")
             clu.runJobs("dirlist", self.dock_command)
-            self.combineResults()
+            #self.combineResults()
         else:
             subprocess.call([self.dock_command])
     def combineResults(self):
