@@ -13,7 +13,7 @@ def main(name, argv):
         print_usage(name)
         return
     seq = argv[2]
-    start = os.path.abspath(argv[0])
+    start = argv[0]
     cst = os.path.abspath(argv[1])
     write_res_file(seq, "resfile")
     PyUtils.create_softlink(start, './start.pdb')
@@ -26,22 +26,22 @@ def main(name, argv):
     os.chdir("fpdock")
     PyUtils.create_softlink("../start_0001.pdb", "./start.pdb")
     PyUtils.create_softlink(cst, "./cst")
-    decoys = "decoys.silent"
     logfpdock = open("fpdock.log", 'w')
-    subprocess.call([Paths.ROSETTA + "FlexPepDocking.linuxclangrelease", "-s", "start.pdb", "-native", "start.pdb", "-ex1", "-ex2aro", "-pep_refine", "-nstruct", "3", "-cst_fa_file", "cst", "-cst_fa_weight", "1.0", "-out:file:silent", decoys, "-out:file:silent_struct_type", "binary"], stdout = logfpdock)
+    decoys = "decoys.silent"
+    subprocess.call([Paths.ROSETTA + "FlexPepDocking.linuxclangrelease", "-s", "start.pdb", "-native", "start.pdb", "-ex1", "-ex2aro", "-pep_refine", "-nstruct", "100", "-cst_fa_file", "cst", "-cst_fa_weight", "1.0", "-out:file:silent", decoys, "-out:file:silent_struct_type", "binary"], stdout = logfpdock)
     logfpdock.close()
     #Get best model in several categories
     score_file = open("../SCORES", 'w')
     for line in open(decoys):
         if re.search("SCORE", line):
             score_file.write(line)
-        score_file.close()
-    intColumn = np.array(PyUtils.getNcolumn(decoys, 25)[1:])
-    pepColumn = np.array(PyUtils.getNcolumn(decoys, 27)[1:])
-    int_score_ranked = np.argsort(intColumn)[::-1]
-    pep_score_ranked = np.argsort(pepColumn)[::-1]
-    int_best_sc = np.sort(intColumn)[::-1]
-    pep_best_sc = np.sort(pepColumn)[::-1]
+    score_file.close()
+    intColumn = np.array([float(i) for i in PyUtils.getNcolumn('../SCORES', 25)[1:]])
+    pepColumn = np.array([float(i) for i in PyUtils.getNcolumn('../SCORES', 27)[1:]])
+    int_score_ranked = np.argsort(intColumn)
+    pep_score_ranked = np.argsort(pepColumn)
+    int_best_sc = np.sort(intColumn)
+    pep_best_sc = np.sort(pepColumn)
     int_best = "start_%04d" % (int_score_ranked[0] + 1)
     pep_best = "start_%04d" % (pep_score_ranked[0] + 1)
     best_scores = open("../Best_scores", 'w')
