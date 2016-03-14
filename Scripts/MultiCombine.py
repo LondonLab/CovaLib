@@ -7,12 +7,8 @@ def main(name, argv):
                 print_usage(name)
                 return
 
-#        arglist = []
-#        dirfile = open(argv[0], 'r')
-#        for line in dirfile:
-#                arglist.append(line + " " + argv[1] + " " + argv[2])
         clu = Cluster.Cluster("CHEM")
-        clu.runJobs(argv[0], "python $SCRIPTS/DOCKovalentTask.py run.alk_hal.frag /home/labs/londonir/Libraries/alkylhalides/frag True")
+        clu.runJobs(argv[0], "python $SCRIPTS/Combine.py run.alk_hal.frag")
 
 def print_usage(name):
         print "Usage : " + name + " <PDB_list_file>"# <compound/library path> <Library(True/False)>"

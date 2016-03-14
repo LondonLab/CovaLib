@@ -9,7 +9,7 @@ class DOCK_Prepare:
     def __init__(self, rec, lig, cov, cov_index, HG):
         self.rec = rec
         self.lig = lig
-	self.folder = os.path.dirname(os.path.realpath(rec)) + "/"
+	self.folder = os.getcwd() + "/"
         self.fixed_rec = self.folder + "rec.pdb"
         self.fixed_lig = self.folder + "xtal-lig.pdb"
         self.cov = cov
