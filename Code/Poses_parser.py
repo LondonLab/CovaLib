@@ -21,10 +21,12 @@ class Poses_parser:
         start_ind = ligand.index('@<TRIPOS>BOND\n')+1
         lig_bonds = ligand[start_ind:]
         return lig_bonds
-    def get_lig_name(self,x):
+    def get_lig_properties(self,x):
         ligand = self.get_lig(x) 
-        lig_name = ligand[0].split()[2]
-        return lig_name
+        name = ligand[0].split()[2]
+        num_of_atoms = ligand[24].split()[4]
+        charge = ligand[22].split()[3]
+        return name, num_of_atoms, charge
     def find_lig_don_acc(self,x):
         lig_donors = []
         lig_acceptors = []
@@ -75,11 +77,16 @@ class rec:
         for line in self.rec_f:
             atom = line[12:16].strip()
             res = line[17:20]
-            if atom.startswith('H'): 
-                rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+            if atom.startswith('H'):
+                if 'HG  CYS A 113' in line: 
+                    continue
+                else:
+                    rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             elif (atom.startswith('O')) or (atom.startswith('S')):
-                rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+                if 'SG  CYS A 113' in line:
+                    continue
+                else: 
+                    rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             else: rec_others.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
         return rec_donors, rec_acceptors, rec_others
-
 
