@@ -1,6 +1,6 @@
 import sys,os,math
 import numpy as np
-sys.path.append("/home/dinad/CovaLib")
+sys.path.append("/home/labs/londonir/dinad/CovaLib")
 from Code import *
 
 def dist (a1,a2):
@@ -14,7 +14,6 @@ def count_bonds(lig,rec,rec_oths):#,LEN_HYD_BOND):
     num_unsut = 0
     num_unsut_buried = 0
     num_bonded_lig_atms = 0
-    num_bonded_rec_atms = 0
     for lig_atom in lig:
         bond_per_atom = 0
         for rec_atom in rec:
@@ -43,20 +42,14 @@ def main(name, argv):
         return
     PDB_list = open(os.getcwd()+'/'+argv[0],'r').readlines()  
     outfile = open(os.getcwd()+'/ligand_score.txt','a')
-<<<<<<< .merge_file_h7QIm5
-    score_name = 'buried_with_all'
-    os.mkdir(score_name)
-    score_path = os.getcwd()+'/'+score_name+'/'
-=======
->>>>>>> .merge_file_EQxzD5
     for i in range(len(PDB_list)):
         PDBid = PDB_list[i].split()[0]
         print PDBid
-        rec_path = '/home/dinad/Project/try/'+PDBid+'/working/rec.crg.pdb.polarH'
+        rec_path = '/home/labs/londonir/dinad/Pin1/docking/try/'+PDBid+'/working/rec.crg.pdb.polarH'
         rec_f = Poses_parser.rec(rec_path)
-        rec_dons, rec_accs, rec_oths, rec_all = rec_f.get_rec_don_acc()
-        outfile_local = open(score_path+'/'+PDBid+'_ligand_score.txt','a')
-        path = '/home/dinad/Project/try/'+PDBid+'/run.alk_hal.frag/poses.mol2'
+        rec_dons, rec_accs, rec_oths = rec_f.get_rec_don_acc()
+        outfile_local = open(os.getcwd()+'/'+PDBid+'/'+PDBid+'_ligand_score.txt','a')
+        path = '/home/labs/londonir/dinad/Pin1/docking/try/'+PDBid+'/run.alk_hal.frag/poses.mol2'
         poses_f = Poses_parser.Poses_parser(path)
         for x in range(0,499):
             lig_name,size,charge = poses_f.get_lig_properties(x)
@@ -65,12 +58,12 @@ def main(name, argv):
             tot_unsut = 0
             tot_unsut_buried = 0
             num_bonded_lig_atms = 0
-            cb = count_bonds(lig_dons,rec_accs,rec_all)
+            cb = count_bonds(lig_dons,rec_accs,rec_oths)
             tot_hyd_bonds += cb[0]
             tot_unsut += cb[1]
             tot_unsut_buried += cb[2]
             num_bonded_lig_atms += cb[3]
-            cb = count_bonds(lig_accs,rec_dons,rec_all)
+            cb = count_bonds(lig_accs,rec_dons,rec_oths)
             tot_hyd_bonds += cb[0]
             tot_unsut += cb[1]
             tot_unsut_buried += cb[2]
