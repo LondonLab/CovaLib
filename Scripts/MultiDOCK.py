@@ -1,5 +1,5 @@
 import sys,os
-sys.path.append("/home/labs/londonir/dinad/CovaLib")
+sys.path.append("/home/dinad/CovaLib")
 from Code import *
 
 def main(name, argv):
@@ -7,12 +7,8 @@ def main(name, argv):
                 print_usage(name)
                 return
 
-#        arglist = []
-#        dirfile = open(argv[0], 'r')
-#        for line in dirfile:
-#                arglist.append(line + " " + argv[1] + " " + argv[2])
         clu = Cluster.Cluster("CHEM")
-        clu.runJobs(argv[0], "python $SCRIPTS/DOCKovalentTask.py run.alk_hal.frag /home/labs/londonir/Libraries/alkylhalides/frag True")
+        clu.runJobs(argv[0], "python $SCRIPTS/DOCKovalentTask.py run.alk_hal.lead /work/londonlab/libraries/alkylhalides/lead-like True")
 
 def print_usage(name):
         print "Usage : " + name + " <PDB_list_file>"# <compound/library path> <Library(True/False)>"

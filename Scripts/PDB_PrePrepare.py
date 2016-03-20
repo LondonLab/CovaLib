@@ -1,6 +1,6 @@
-#input: pdbID_list,covalent_residue,covalent_index,atom_to_remove, folder_of_mol2_files
+#input: pdbID_list that includes: covalent_residue,covalent_index,atom_to_remove, folder_of_mol2_files
 import sys,os
-sys.path.append("/home/labs/londonir/dinad/CovaLib")
+sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
 def main(name, argv):
         if (len(argv) != 1):

@@ -1,6 +1,6 @@
 import sys,os,math
 import numpy as np
-sys.path.append("/home/labs/londonir/dinad/CovaLib")
+sys.path.append("/home/dinad/CovaLib")
 from Code import *
 
 def dist (a1,a2):
@@ -14,12 +14,13 @@ def count_bonds(lig,rec,rec_oths):#,LEN_HYD_BOND):
     num_unsut = 0
     num_unsut_buried = 0
     num_bonded_lig_atms = 0
+    num_bonded_rec_atms = 0
     for lig_atom in lig:
         bond_per_atom = 0
         for rec_atom in rec:
             bond_len = dist(lig_atom,rec_atom)
             if bond_len<LEN_HYD_BOND:
-                print [lig_atom,rec_atom,bond_len]
+#                print [lig_atom,rec_atom,bond_len]
                 num_hyd_bonds +=1
                 bond_per_atom +=1
         if bond_per_atom == 0:
@@ -41,36 +42,39 @@ def main(name, argv):
         print_usage(name)
         return
     PDB_list = open(os.getcwd()+'/'+argv[0],'r').readlines()  
-#    outfile = open(os.getcwd()+'/ligand_score.txt','a')
-    for i in [1]:#range(len(PDB_list)):
-        PDBid = '4TNS' #PDB_list[i].split()[0]
+    outfile = open(os.getcwd()+'/ligand_score.txt','a')
+    score_name = 'buried_with_all'
+    os.mkdir(score_name)
+    score_path = os.getcwd()+'/'+score_name+'/'
+    for i in range(len(PDB_list)):
+        PDBid = PDB_list[i].split()[0]
         print PDBid
-        rec_path = '/home/labs/londonir/dinad/Pin1/docking/try/'+PDBid+'/working/rec.crg.pdb.polarH'
+        rec_path = '/home/dinad/Project/try/'+PDBid+'/working/rec.crg.pdb.polarH'
         rec_f = Poses_parser.rec(rec_path)
-        rec_dons, rec_accs, rec_oths = rec_f.get_rec_don_acc()
-        outfile_local = open(os.getcwd()+'/'+PDBid+'/'+PDBid+'_ligand_score.txt','a')
-        path = '/home/labs/londonir/dinad/Pin1/docking/try/'+PDBid+'/run.alk_hal.frag/poses.mol2'
+        rec_dons, rec_accs, rec_oths, rec_all = rec_f.get_rec_don_acc()
+        outfile_local = open(score_path+'/'+PDBid+'_ligand_score.txt','a')
+        path = '/home/dinad/Project/try/'+PDBid+'/run.alk_hal.frag/poses.mol2'
         poses_f = Poses_parser.Poses_parser(path)
-        for x in range(222,223):
-            lig_name = poses_f.get_lig_name(x)
+        for x in range(0,499):
+            lig_name,size,charge = poses_f.get_lig_properties(x)
             lig_dons,lig_accs = poses_f.find_lig_don_acc(x)
             tot_hyd_bonds = 0
             tot_unsut = 0
             tot_unsut_buried = 0
             num_bonded_lig_atms = 0
-            cb = count_bonds(lig_dons,rec_accs,rec_oths)
+            cb = count_bonds(lig_dons,rec_accs,rec_all)
             tot_hyd_bonds += cb[0]
             tot_unsut += cb[1]
             tot_unsut_buried += cb[2]
             num_bonded_lig_atms += cb[3]
-            cb = count_bonds(lig_accs,rec_dons,rec_oths)
+            cb = count_bonds(lig_accs,rec_dons,rec_all)
             tot_hyd_bonds += cb[0]
             tot_unsut += cb[1]
             tot_unsut_buried += cb[2]
             num_bonded_lig_atms += cb[3]
 #            print [PDBid,x+1,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms]
-#            outfile.write('%s %d %s %d %d %d %d\n' % (PDBid,x+1,lig_name,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms))
-#            outfile_local.write('%s %d %s %d %d %d %d\n' % (PDBid,x+1,lig_name,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms))
+            outfile.write('%s %d %s %s %s %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms))
+            outfile_local.write('%s %d %s %s %s %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms))
 def print_usage(name):
     print "Usage : " + name + " <PDB_list_file>"
 

@@ -2,7 +2,7 @@
 #Code review by 
 
 import sys,os,math
-sys.path.append("/home/labs/londonir/dinad/CovaLib")
+sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
 
 def main(name, argv):

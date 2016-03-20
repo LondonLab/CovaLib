@@ -1,5 +1,5 @@
 import sys,os
-sys.path.append("/home/labs/londonir/dinad/CovaLib")
+sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
 
 def main(name, argv):
@@ -8,7 +8,7 @@ def main(name, argv):
                 return
 
         clu = Cluster.Cluster("CHEM")
-        clu.runJobs(argv[0], "python $SCRIPTS/Prepare.py rec.pdb xtal-lig.pdb CYS 113 GH")
+        clu.runJobs(argv[0], "python $SCRIPTS/Prepare.py rec.pdb xtal-lig.pdb CYS 113 HG")
 
 def print_usage(name):
         print "Usage : " + name + " <PDB_list_file>"

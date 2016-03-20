@@ -17,7 +17,7 @@ class DOCK_Prepare:
         self.hg = HG
     def blaster(self):
         self.create_fixed_names()
-        subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg])
+        subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg, "--addhOptions=\" -HIS -FLIPs \"  -v"])
     def changeIndock(self):
         INDOCK = self.folder + "INDOCK"
         old = open(INDOCK, 'r')
