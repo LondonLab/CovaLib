@@ -49,3 +49,4 @@ class Cluster:
 		else:
 			print "This is not a cluster supporting server"
 			sys.exit()
+
