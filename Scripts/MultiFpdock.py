@@ -16,7 +16,7 @@ def main(name, argv):
 		return
 	dirlist = argv[0]
 	#Run multiple Fpdock via cluster
-	cluster = Cluster.Cluster("CHEM")
+	cluster = Cluster.Cluster()
 	cluster.runJobsName(dirlist, "python " + Paths.SCRIPTS + "SingleFpdock.py " + os.path.abspath(argv[1]) + " " + os.path.abspath(argv[2]))
 
 def print_usage(name):
