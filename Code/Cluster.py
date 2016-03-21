@@ -14,8 +14,7 @@ class Cluster:
 			if(self.typ == "WEXAC"):
 				subprocess.call(["bsub", "-u", "/dev/null", "-R", "rusage[mem=1024]", "-q", "new-all.q", "-o", "out", "-e", "err", command])
 			if(self.typ == "CHEM"):
-				#print "qsub -q idle " + command
-				subprocess.call(["qsub", "-q", "idle", command])
+				subprocess.call(["qsub", "-q", "medium", "-l", "select=1:ncpus=1:mem=10gb", "-j", "eo", "--", command])
 			os.chdir("../")
 		f.close()
         def runJobsArgs(self, dirlist, command, arglist):
@@ -30,7 +29,7 @@ class Cluster:
                         if(self.typ == "WEXAC"):
                                 subprocess.call(["bsub", "-u", "/dev/null", "-R", "rusage[mem=1024]", "-q", "new-all.q", "-o", "out", "-e", "err", command, str(arglist[i])])
                         if(self.typ == "CHEM"):
-				subprocess.call(["qsub", "-q", "idle", command])
+				subprocess.call(["qsub", "-q", "medium", "-l", "select=1:ncpus=1:mem=10gb", "-j", "eo", "--", command])
 			os.chdir("../")
                         i += 1
                 f.close()
@@ -49,4 +48,3 @@ class Cluster:
 		else:
 			print "This is not a cluster supporting server"
 			sys.exit()
-
