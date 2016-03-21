@@ -22,6 +22,8 @@ class Compound:
         return line
     def getRelScore(self):
         return self.score / self.heavy_atoms
+    def __eq__(self, other):
+        return self.name == other.name
 
 class Result_List:
     def __init__(self, file_name):
@@ -34,8 +36,10 @@ class Result_List:
         return self.res_list
     def sortList(self, fun):
         self.res_list = sorted(self.res_list, key = fun)
-    def writeList(self, output):
+    def writeList(self, output, num):
         f = open(output, 'w')
-        for c in self.res_list:
+        for c in self.res_list[:num]:
             f.write(str(c))
         f.close()
+#    def removeSubList(self, new_list):
+        

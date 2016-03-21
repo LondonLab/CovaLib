@@ -12,7 +12,7 @@ def main(name, argv):
 		return
         rlist = Result_List.Result_List(argv[0])
         rlist.sortList(Result_List.Compound.getRelScore)
-        rlist.writeList(argv[1])
+        rlist.writeList(argv[1], 500)
 	
 def print_usage(name):
 	print "Usage : " + name + " <file_name> <output_name>"
