@@ -41,5 +41,5 @@ class Result_List:
         for c in self.res_list[:num]:
             f.write(str(c))
         f.close()
-#    def removeSubList(self, new_list):
-        
+    def removeSubList(self, other):
+        self.res_list = [x for x in self.res_list if x not in other.res_list]

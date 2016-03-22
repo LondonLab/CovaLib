@@ -5,17 +5,20 @@ import shutil
 import subprocess
 import os
 import Paths
+import PyUtils
 
 class DOCK_Prepare:
     def __init__(self, rec, lig, cov, cov_index, HG):
         self.rec = rec
         self.lig = lig
-	self.folder = os.getcwd() + "/"
+	#self.folder = os.getcwd() + "/"
+        self.folder = os.path.dirname(rec) + "/"
         self.fixed_rec = self.folder + "rec.pdb"
         self.fixed_lig = self.folder + "xtal-lig.pdb"
         self.cov = cov
         self.cov_index = cov_index
         self.hg = HG
+        PyUtils.initPythonVs()
     def blaster(self):
         self.create_fixed_names()
         subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg])

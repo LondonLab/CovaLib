@@ -12,3 +12,5 @@ def getNcolumn(file_name, n):
 		if(len(columns) >= n + 1):
     			Ncolumn.append(columns[n])
     	return Ncolumn
+def initPythonVs():
+	os.system("module load python")
