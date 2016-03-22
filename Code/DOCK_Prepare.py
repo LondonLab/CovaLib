@@ -1,6 +1,5 @@
 #Written by Daniel Zaidman
 #Code review by 
-
 import shutil
 import subprocess
 import os
@@ -21,7 +20,7 @@ class DOCK_Prepare:
         PyUtils.initPythonVs()
     def blaster(self):
         self.create_fixed_names()
-        subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg])
+        subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg, "--addhOptions=\" -HIS -FLIPs \"  -v"])
     def changeIndock(self):
         INDOCK = self.folder + "INDOCK"
         old = open(INDOCK, 'r')
@@ -45,5 +44,7 @@ class DOCK_Prepare:
         os.rename(INDOCK + '2', INDOCK)
 #Inner functions
     def create_fixed_names(self):
-        shutil.copyfile(self.rec, self.fixed_rec)
-        shutil.copyfile(self.lig, self.fixed_lig)
+        if(not os.path.exists(self.fixed_rec)):
+            shutil.copyfile(self.rec, self.fixed_rec)
+        if(not os.path.exists(self.fixed_lig)):
+            shutil.copyfile(self.lig, self.fixed_lig)
