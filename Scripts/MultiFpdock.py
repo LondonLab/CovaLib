@@ -16,8 +16,8 @@ def main(name, argv):
 		return
 	dirlist = argv[0]
 	#Run multiple Fpdock via cluster
-	cluster = Cluster.Cluster("CHEM")
-	cluster.runJobsName(dirlist, "python ../SingleFpdock.py " + argv[1] + " " + argv[2])
+	cluster = Cluster.Cluster()
+	cluster.runJobsName(dirlist, "python " + Paths.SCRIPTS + "SingleFpdock.py " + os.path.abspath(argv[1]) + " " + os.path.abspath(argv[2]))
 
 def print_usage(name):
 	print "Usage : " + name + " <sequences file> <start_pdb> <contraints_file>"
