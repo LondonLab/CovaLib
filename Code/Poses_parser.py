@@ -78,29 +78,12 @@ class rec:
         for line in self.rec_f:
             atom = line[12:16].strip()
             res = line[17:20]
-<<<<<<< .merge_file_606LV2
-            if 'HG  CYS A 113' not in line:
-                rec_all.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+            rec_all.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             if atom.startswith('H'):
-                if 'HG  CYS A 113' not in line: 
-                    rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+                rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             elif (atom.startswith('O')) or (atom.startswith('S')):
-                if 'SG  CYS A 113' not in line:
-                    rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+                rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             else: rec_others.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
         return rec_donors, rec_acceptors, rec_others, rec_all
-=======
-            if atom.startswith('H'):
-                if 'HG  CYS A 113' in line: 
-                    continue
-                else:
-                    rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
-            elif (atom.startswith('O')) or (atom.startswith('S')):
-                if 'SG  CYS A 113' in line:
-                    continue
-                else: 
-                    rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
-            else: rec_others.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
-        return rec_donors, rec_acceptors, rec_others
->>>>>>> .merge_file_xdB9j3
+
 

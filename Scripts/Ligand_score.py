@@ -43,12 +43,9 @@ def main(name, argv):
         return
     PDB_list = open(os.getcwd()+'/'+argv[0],'r').readlines()  
     outfile = open(os.getcwd()+'/ligand_score.txt','a')
-<<<<<<< .merge_file_h7QIm5
     score_name = 'buried_with_all'
     os.mkdir(score_name)
     score_path = os.getcwd()+'/'+score_name+'/'
-=======
->>>>>>> .merge_file_EQxzD5
     for i in range(len(PDB_list)):
         PDBid = PDB_list[i].split()[0]
         print PDBid
