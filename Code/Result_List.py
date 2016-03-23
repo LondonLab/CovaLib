@@ -41,5 +41,12 @@ class Result_List:
         for c in self.res_list[:num]:
             f.write(str(c))
         f.close()
-    def removeSubList(self, other):
-        self.res_list = [x for x in self.res_list if x not in other.res_list]
+    def removeSubList(self, other, num):
+        self.res_list = [x for x in self.res_list if x not in other.res_list[:num]]
+    def findIndex(self, name):
+        return self.res_list.index(Compound([0,0,name,0,0,0,0,0,0,0,0,0,0,0,0,0]))
+    def findIndexList(self, namelist):
+        namearr = []
+        for name in open(namelist, 'r'):
+            namearr.append(self.findIndex(name))
+        return namearr

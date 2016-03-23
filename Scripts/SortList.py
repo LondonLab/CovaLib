@@ -3,17 +3,18 @@
 
 import subprocess
 import sys,os,math
-sys.path.append("/home/labs/londonir/danielza/CovaLib")
+sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
 
 def main(name, argv):
-	if (not (len(argv) == 2 or len(argv) == 3))):
+	if (not (len(argv) == 2 or len(argv) == 3)):
 		print_usage(name)
 		return
         rlist = Result_List.Result_List(argv[0])
         rlist.sortList(Result_List.Compound.getRelScore)
 	if(len(argv) == 3):
-		rlist.
+	        nlist = Result_List.Result_List(argv[2])
+		rlist.removeSubList(nlist, 500)
         rlist.writeList(argv[1], 500)
 	
 def print_usage(name):
