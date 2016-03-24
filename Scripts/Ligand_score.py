@@ -1,7 +1,15 @@
 import sys,os,math
-import numpy as np
-sys.path.append("/home/dinad/CovaLib")
+sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
+
+def get_purch(lig_name):
+    sys.path.append("/work/londonlab/git_dock/DOCK/analysis")
+    import zincapi
+    zinc = zincapi.ZINCAPI()
+    zinc_id = 'ZINC'+lig_name[3:14]
+    lig = zinc.substances.get(zinc_id, fields=('zinc_id', 'purchasability'))
+    purch_log = int(lig.purchasability == 'For_Sale')
+    return purch_log
 
 def dist (a1,a2):
     a1 = [float(x) for x in a1]
@@ -35,28 +43,31 @@ def count_bonds(lig,rec,rec_oths):#,LEN_HYD_BOND):
         else: num_bonded_lig_atms += 1
     return num_hyd_bonds, num_unsut, num_unsut_buried, num_bonded_lig_atms 
 
- 
-
 def main(name, argv):
     if (len(argv) != 1):
         print_usage(name)
         return
-    PDB_list = open(os.getcwd()+'/'+argv[0],'r').readlines()  
-    outfile = open(os.getcwd()+'/ligand_score.txt','a')
-    score_name = 'buried_with_all'
+    path = os.getcwd()
+    PDB_list = open(path+'/'+argv[0],'r').readlines()  
+    outfile = open(path+'/ligand_score.txt','a')
+    score_name = 'no_zincapi'
     os.mkdir(score_name)
-    score_path = os.getcwd()+'/'+score_name+'/'
+    score_path = path+'/'+score_name+'/'
     for i in range(len(PDB_list)):
         PDBid = PDB_list[i].split()[0]
         print PDBid
-        rec_path = '/home/dinad/Project/try/'+PDBid+'/working/rec.crg.pdb.polarH'
+        rec_path = path+'/'+PDBid+'/working/rec.crg.pdb'
         rec_f = Poses_parser.rec(rec_path)
         rec_dons, rec_accs, rec_oths, rec_all = rec_f.get_rec_don_acc()
         outfile_local = open(score_path+'/'+PDBid+'_ligand_score.txt','a')
-        path = '/home/dinad/Project/try/'+PDBid+'/run.alk_hal.frag/poses.mol2'
-        poses_f = Poses_parser.Poses_parser(path)
-        for x in range(0,499):
+        mol_path = path+'/'+PDBid+'/run.alk_hal.lead-1/poses.mol2'
+        poses_f = Poses_parser.Poses_parser(mol_path)
+        len_poses = poses_f.get_len_poses()
+        print poses_f.get_len_poses()
+        for x in range(len_poses-1):
             lig_name,size,charge = poses_f.get_lig_properties(x)
+#            lig_purch = get_purch(lig_name)
+            lig_purch = 0
             lig_dons,lig_accs = poses_f.find_lig_don_acc(x)
             tot_hyd_bonds = 0
             tot_unsut = 0
@@ -73,8 +84,9 @@ def main(name, argv):
             tot_unsut_buried += cb[2]
             num_bonded_lig_atms += cb[3]
 #            print [PDBid,x+1,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms]
-            outfile.write('%s %d %s %s %s %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms))
-            outfile_local.write('%s %d %s %s %s %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms))
+            outfile.write('%s %d %s %s %s %d %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms,lig_purch))
+            outfile_local.write('%s %d %s %s %s %d %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms,lig_purch))
+
 def print_usage(name):
     print "Usage : " + name + " <PDB_list_file>"
 
