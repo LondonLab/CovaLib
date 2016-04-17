@@ -1,8 +1,9 @@
+from openeye.oechem import *
 import sys,os,math
 sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
 
-def get_purch(lig_name):
+def get_purch(lig_name):#very slow!!!
     sys.path.append("/work/londonlab/git_dock/DOCK/analysis")
     import zincapi
     zinc = zincapi.ZINCAPI()
@@ -10,6 +11,52 @@ def get_purch(lig_name):
     lig = zinc.substances.get(zinc_id, fields=('zinc_id', 'purchasability'))
     purch_log = int(lig.purchasability == 'For_Sale')
     return purch_log
+
+def get_purch2(lig_name):
+    import re
+    st = re.search('[1-9]',lig_name).start()
+    zinc_id = lig_name[st:14]
+    pre_cmd = 'curl http://zinc15.docking.org/substances.txt:zinc_id+smiles+purchasability -F zinc_id-in='+zinc_id+' -F count=all'
+    cmd = pre_cmd.split()
+    from subprocess import Popen, PIPE
+    output,error = Popen(cmd,stdout = PIPE, stderr= PIPE).communicate()
+    if len(output.split())==3:
+        return output.split()[2]
+    else:
+        return 'UNKNOWN'
+
+def charged_smiles(smiles):
+    smi_f = open('./tmp4.smi','w')
+    smi_f.write(smiles)
+    smi_f.flush()
+    cmd = '/work/londonlab/software/ChemAxon/MarvinBeans/bin/cxcalc majorms -H 7 tmp4.smi'
+    from subprocess import Popen, PIPE
+    output,error = Popen(cmd.split(),stdout = PIPE, stderr= PIPE).communicate()
+    os.remove('./tmp4.smi')
+    if len(output.split('\t')) == 3:
+        smiles7 = output.strip().split('\t')[2]
+    else: smiles7 = 'no_ch_smi'
+    return smiles7
+    
+
+def check_for_tzvi(smiles):#checks also for double reactivity
+    ch_smiles = charged_smiles(smiles)
+    if ch_smiles == 'no_ch_smi': return 'no_ch_smi'
+    else:
+        mol = OEGraphMol()
+        OESmilesToMol(mol, ch_smiles)
+        matches = 0
+        for pat in ['[$([!-0!-1!-2!-3!-4]~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~*~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~*~*~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~*~*~*~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~*~*~*~*~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~*~*~*~*~*~*~[!+0!+1!+2!+3!+4]),$([!-0!-1!-2!-3!-4]~*~*~*~*~*~*~*~*~*~[!+0!+1!+2!+3!+4])]','[C;H2][Cl,Br,I]']:
+            ss = OESubSearch(pat)
+            OEPrepareSearch(mol, ss)
+            for count, match in enumerate(ss.Match(mol)):
+                matches += count+1
+        if matches == 0: return 'good'
+        else: return 'smart-fail'
+
+def check_C_degree(smiles):
+    if 'C[SiH3]' in smiles: return '1'
+    else: return '2'
 
 def dist (a1,a2):
     a1 = [float(x) for x in a1]
@@ -49,9 +96,9 @@ def main(name, argv):
         return
     path = os.getcwd()
     PDB_list = open(path+'/'+argv[0],'r').readlines()  
-    outfile = open(path+'/ligand_score.txt','a')
-    score_name = 'no_zincapi'
-    os.mkdir(score_name)
+    score_name = 'unsubstituted-acrylamides.lead'
+#    outfile = open(path+'/'+score_name+'ligand_score.txt','a')
+    PyUtils.create_folder(score_name)
     score_path = path+'/'+score_name+'/'
     for i in range(len(PDB_list)):
         PDBid = PDB_list[i].split()[0]
@@ -60,14 +107,14 @@ def main(name, argv):
         rec_f = Poses_parser.rec(rec_path)
         rec_dons, rec_accs, rec_oths, rec_all = rec_f.get_rec_don_acc()
         outfile_local = open(score_path+'/'+PDBid+'_ligand_score.txt','a')
-        mol_path = path+'/'+PDBid+'/run.alk_hal.lead-1/poses.mol2'
+        mol_path = path+'/'+PDBid+'/run.unsubstituted-acrylamides.lead/poses.mol2'
         poses_f = Poses_parser.Poses_parser(mol_path)
         len_poses = poses_f.get_len_poses()
-        print poses_f.get_len_poses()
         for x in range(len_poses-1):
+            print PDBid+' '+str(x)
             lig_name,size,charge = poses_f.get_lig_properties(x)
-#            lig_purch = get_purch(lig_name)
-            lig_purch = 0
+            lig_purch = get_purch2(lig_name)
+#            lig_purch = 'purch'
             lig_dons,lig_accs = poses_f.find_lig_don_acc(x)
             tot_hyd_bonds = 0
             tot_unsut = 0
@@ -83,9 +130,31 @@ def main(name, argv):
             tot_unsut += cb[1]
             tot_unsut_buried += cb[2]
             num_bonded_lig_atms += cb[3]
-#            print [PDBid,x+1,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms]
-            outfile.write('%s %d %s %s %s %d %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms,lig_purch))
-            outfile_local.write('%s %d %s %s %s %d %d %d %d %d\n' % (PDBid,x+1,lig_name,size,charge,tot_hyd_bonds,tot_unsut,tot_unsut_buried,num_bonded_lig_atms,lig_purch))
+            smiles = poses_f.get_smiles(x)
+            tzvi = check_for_tzvi(smiles)
+            deg = check_C_degree(smiles)
+            energies = poses_f.get_energies(x)
+            energies = ' '.join(energies)
+            tot_num_clushes = 0
+            clush_score = '1'
+            cb = count_bonds(lig_dons,rec_dons,rec_all)
+            tot_num_clushes += cb[0]
+            lig_coords = poses_f.get_lig_coords(x)
+            lig_dists_to_rec = 0
+            for lig_atom in lig_coords:
+                lig_atom = lig_atom.split()[2:5]
+                atom_dists_to_rec = 0
+                for rec_atom in rec_all:
+                    dist_to_rec = dist(lig_atom,rec_atom)
+                    atom_dists_to_rec += (dist_to_rec)**2
+                mean_atom_dist_to_rec = (atom_dists_to_rec/len(rec_all))**0.5
+                lig_dists_to_rec += mean_atom_dist_to_rec
+            mean_lig_dist_to_rec = str(lig_dists_to_rec/len(lig_coords))
+            if tot_num_clushes != 0:
+                clush_score = 'clush';
+            output = ' '.join([PDBid,str(x+1),lig_name,size,charge,str(tot_hyd_bonds),str(tot_unsut),str(tot_unsut_buried),str(num_bonded_lig_atms),lig_purch,tzvi,deg,energies,clush_score,mean_lig_dist_to_rec])
+#            outfile.write(output+'\n')
+            outfile_local.write(output+'\n')
 
 def print_usage(name):
     print "Usage : " + name + " <PDB_list_file>"
