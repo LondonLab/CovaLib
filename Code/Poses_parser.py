@@ -7,6 +7,20 @@ class Poses_parser:
             if poses_f[i].startswith('##########                 Name'):
                 start_inds.append(i)
         self.start_inds = start_inds
+    def get_len_poses(self):
+        len_poses = len(self.start_inds)
+        return len_poses
+    def get_energies(self,x):
+        ligand = self.get_lig(x)
+        electrostatic =  ligand[12].split()[2]
+        vdw = ligand[14].split()[4]
+        pol_desolv = ligand[15].split()[4]
+        apol_desolv = ligand[16].split()[4]
+        return electrostatic, vdw, pol_desolv, apol_desolv
+    def get_smiles(self,x):
+        ligand = self.get_lig(x)
+        smiles = ' '.join(ligand[2].split()[2:])
+        return smiles
     def get_lig(self,x):
         ligand = self.poses_f[self.start_inds[x]:self.start_inds[x+1]]
         return ligand
@@ -78,29 +92,13 @@ class rec:
         for line in self.rec_f:
             atom = line[12:16].strip()
             res = line[17:20]
-<<<<<<< .merge_file_606LV2
-            if 'HG  CYS A 113' not in line:
-                rec_all.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+            rec_all.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             if atom.startswith('H'):
-                if 'HG  CYS A 113' not in line: 
-                    rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+                rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             elif (atom.startswith('O')) or (atom.startswith('S')):
-                if 'SG  CYS A 113' not in line:
-                    rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
+                rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
             else: rec_others.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
         return rec_donors, rec_acceptors, rec_others, rec_all
-=======
-            if atom.startswith('H'):
-                if 'HG  CYS A 113' in line: 
-                    continue
-                else:
-                    rec_donors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
-            elif (atom.startswith('O')) or (atom.startswith('S')):
-                if 'SG  CYS A 113' in line:
-                    continue
-                else: 
-                    rec_acceptors.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
-            else: rec_others.append([float(line[30:38]),float(line[38:47]),float(line[47:56])])
-        return rec_donors, rec_acceptors, rec_others
->>>>>>> .merge_file_xdB9j3
+
+
 
