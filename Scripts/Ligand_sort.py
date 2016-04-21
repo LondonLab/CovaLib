@@ -25,17 +25,17 @@ def filter_list(scored_list,score_name,PDBid):
     j = 1
     for i in range(len(scored_list)):
         sp = scored_list[i]
-        if (float(sp[4]) == -1 or float(sp[4])== 0) and  (sp[9] == 'In-Stock') and  sp[10] == 'good' and sp[16] == '1': 
+        if (sp[9] == 'In-Stock') and  sp[10] == 'good' and sp[16] == '1' and (float(sp[4]) == -1 or float(sp[4])== 0):
             line = ' '.join(sp)+'\n'
             sorted_list.write(str(j)+' '+line)
             j += 1
             
 
-def create_new_mol2(PDBid,score_name):
+def create_new_mol2(PDBid,score_name,argv[1]):
     path = os.getcwd()+'/'+score_name+'/'
     sorted_list = open(path+PDBid+'_ligand_sorted.txt','r').readlines()
     new_mol =  open(path+PDBid+'_sorted_poses.mol2','a')
-    poses_f = Poses_parser.Poses_parser(os.getcwd()+'/'+PDBid+'/run.alpha-sub-acrylate-esters.frag/poses.mol2')
+    poses_f = Poses_parser.Poses_parser(os.getcwd()+'/'+PDBid+'/'+argv[1]+'/poses.mol2')
     for line in sorted_list:
         line = line.split()
         lig = poses_f.get_lig(int(line[2])-1)
@@ -45,12 +45,12 @@ def create_new_mol2(PDBid,score_name):
         
     
 def main(name, argv):
-    if (len(argv) != 1):
+    if (len(argv) != 2):
         print_usage(name)
         return
 
     PDB_list = open(os.getcwd()+'/'+argv[0],'r').readlines()
-    score_name = '13_04_alpha-sub-acrylate-esters.frag'
+    score_name = argv[1]+'_scored'
     for i in range(len(PDB_list)):
         PDBid = PDB_list[i].split()[0]
         print PDBid
@@ -64,10 +64,10 @@ def main(name, argv):
 
         filter_list(scored_list,score_name,PDBid)
                 
-        create_new_mol2(PDBid,score_name)
+        create_new_mol2(PDBid,score_name,argv[1])
 
 def print_usage(name):
-    print "Usage : " + name + "<list_of_folders>"
+    print "Usage : " + name + "<list_of_folders> <run.folder (library)>"
 
 
 if __name__ == "__main__":

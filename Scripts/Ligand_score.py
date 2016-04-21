@@ -25,22 +25,22 @@ def get_purch2(lig_name):
     else:
         return 'UNKNOWN'
 
-def charged_smiles(smiles):
-    smi_f = open('./tmp4.smi','w')
+def charged_smiles(smiles,lib):
+    smi_f = open('./tmp'+lib+'.smi','w')
     smi_f.write(smiles)
     smi_f.flush()
-    cmd = '/work/londonlab/software/ChemAxon/MarvinBeans/bin/cxcalc majorms -H 7 tmp4.smi'
+    cmd = '/work/londonlab/software/ChemAxon/MarvinBeans/bin/cxcalc majorms -H 7 tmp'+lib+'.smi'
     from subprocess import Popen, PIPE
     output,error = Popen(cmd.split(),stdout = PIPE, stderr= PIPE).communicate()
-    os.remove('./tmp4.smi')
+    os.remove('./tmp'+lib+'.smi')
     if len(output.split('\t')) == 3:
         smiles7 = output.strip().split('\t')[2]
     else: smiles7 = 'no_ch_smi'
     return smiles7
     
 
-def check_for_tzvi(smiles):#checks also for double reactivity
-    ch_smiles = charged_smiles(smiles)
+def check_for_tzvi(smiles,lib):#checks also for double reactivity
+    ch_smiles = charged_smiles(smiles,lib)
     if ch_smiles == 'no_ch_smi': return 'no_ch_smi'
     else:
         mol = OEGraphMol()
@@ -91,15 +91,15 @@ def count_bonds(lig,rec,rec_oths):#,LEN_HYD_BOND):
     return num_hyd_bonds, num_unsut, num_unsut_buried, num_bonded_lig_atms 
 
 def main(name, argv):
-    if (len(argv) != 1):
+    if (len(argv) != 3):
         print_usage(name)
         return
-    path = os.getcwd()
+    path = argv[1]
     PDB_list = open(path+'/'+argv[0],'r').readlines()  
-    score_name = 'unsubstituted-acrylamides.lead'
+    score_name = argv[2]+'_scored'
 #    outfile = open(path+'/'+score_name+'ligand_score.txt','a')
-    PyUtils.create_folder(score_name)
-    score_path = path+'/'+score_name+'/'
+    PyUtils.create_folder(path+'/'+score_name)
+    score_path = path+'/'+score_name
     for i in range(len(PDB_list)):
         PDBid = PDB_list[i].split()[0]
         print PDBid
@@ -107,7 +107,7 @@ def main(name, argv):
         rec_f = Poses_parser.rec(rec_path)
         rec_dons, rec_accs, rec_oths, rec_all = rec_f.get_rec_don_acc()
         outfile_local = open(score_path+'/'+PDBid+'_ligand_score.txt','a')
-        mol_path = path+'/'+PDBid+'/run.unsubstituted-acrylamides.lead/poses.mol2'
+        mol_path = path+'/'+PDBid+'/'+argv[2]+'/poses.mol2'
         poses_f = Poses_parser.Poses_parser(mol_path)
         len_poses = poses_f.get_len_poses()
         for x in range(len_poses-1):
@@ -131,7 +131,7 @@ def main(name, argv):
             tot_unsut_buried += cb[2]
             num_bonded_lig_atms += cb[3]
             smiles = poses_f.get_smiles(x)
-            tzvi = check_for_tzvi(smiles)
+            tzvi = check_for_tzvi(smiles,argv[2])
             deg = check_C_degree(smiles)
             energies = poses_f.get_energies(x)
             energies = ' '.join(energies)
@@ -157,7 +157,7 @@ def main(name, argv):
             outfile_local.write(output+'\n')
 
 def print_usage(name):
-    print "Usage : " + name + " <PDB_list_file>"
+    print "Usage : " + name + " <list_of_receptors> <path_to_receptor_folders> <run.folder (library)>"
 
 
 if __name__ == "__main__":
