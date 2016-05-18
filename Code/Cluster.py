@@ -15,7 +15,7 @@ class Cluster:
 			cur_job = open(job_file, 'w')
 			for line in cjob.sendjob_text[:7]:
 				cur_job.write(line)
-			cur_job.write(cjob.sendjob_text[7] + command)
+			cur_job.write(cjob.sendjob_text[7] + '\'' + command + '\'')
 			for line in cjob.sendjob_text[8:]:
 				cur_job.write(line)
 			cur_job.close()
@@ -86,7 +86,7 @@ class Cluster:
 	def runCommandsArgs(self, command, arglist):
 		commands = []
 		for arg in arglist:
-			commands += [command + ' ' + str(arg)]
+			commands.append(command + ' ' + str(arg))
 		self.runCommands(commands)
         def runJobsName(self, dirlist, command):
                 with open(dirlist) as f:
