@@ -1,6 +1,8 @@
 import os
 import PyUtils
 import subprocess
+import Bio.PDB as bp
+
 def DownloadPDBs(PDB_list_file):
     PDB_list = open(os.getcwd()+'/'+PDB_list_file,'r').readlines()
     for i in range(len(PDB_list)):
@@ -39,6 +41,12 @@ def lig(PDB_list_file):
                         lig_f.write(line)
         lig_f.flush()
         os.chdir("..")
+        
+def count_heavy_atom(pdb_path, name = "rec"):
+    """reads the input pdb as a list and as a structre object from BioPython"""
+    parser = bp.PDBParser()
+    structure = parser.get_structure(name, pdb_path)
+    return len( [atm for atm in structure.get_atoms() if atm.element is not 'H']) 
 
 def changeMolChain(pdb_file, new_chain):
     with open(pdb_file, 'r') as pfile:
