@@ -44,6 +44,9 @@ def main(argv=[__name__]):
             OEThrow.Warning("Output is the same as input when overlay is false")
 
     rmsdfile = open(rmsdout, 'w')
+    min_rmsd_file = "min_rmsd.mol2"
+    minfs = oemolostream()
+    min_rmsd = 1000
     for mol in ifs.GetOEMols():
         OEThrow.Info(mol.GetTitle())
 
@@ -62,6 +65,11 @@ def main(argv=[__name__]):
             if itf.GetBool("-overlay"):
                 OERotate(conf, rmtx[cidx * 9: cidx * 9 + 9])
                 OETranslate(conf, tmtx[cidx * 3: cidx * 3 + 3])
+
+        if rmsds[0] < min_rmsd:
+            min_rmsd = rmsds[0]
+            minfs.open(min_rmsd_file)
+            OEWriteMolecule(minfs, mol)
 
         if itf.HasString("-out"):
             OEWriteMolecule(ofs, mol)

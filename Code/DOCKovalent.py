@@ -44,7 +44,7 @@ class DOCKovalent:
         PyUtils.create_softlink(self.folder + files, self.name + files)
     def DOCK(self):
         if(self.library):
-            #subprocess.call([Paths.DOCKBASE + "docking/setup/setup_db2.csh", self.compound])
+            subprocess.call([Paths.DOCKBASE + "docking/setup/setup_db2.csh", self.compound])
             clu = Cluster.Cluster()
             clu.runJobs("dirlist", self.dock_command)
         else:

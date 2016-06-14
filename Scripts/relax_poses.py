@@ -3,22 +3,17 @@ import sys
 import os
 sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
+import shutil
 
 def main(name, argv):
         if(not len(argv) == 1):
                 print_usage(name)
                 return
-	PyUtils.create_folder('poses')
-	i = 0
-	inside = False
-        for line in open(argv[0], 'r'):
-		if not(inside) and line[0] == '#':
-			i += 1
-			inside = True
-			poses_f = open('poses/' + line[47:-3]  + '.mol2', 'w')
-		if not line[0] == '#':
-			inside = False
-		poses_f.write(line)
+        subprocess.call(['python', Paths.SCRIPTS + 'relax_pipeline.py', argv[0]])
+        '''os.chdir('poses')
+        for f in os.listdir(os.getcwd()):
+            pyUtils.create_folder(f)
+            shutil.move(f, f + '/' + f)'''
 
 def print_usage(name):
         print "Usage : " + name + " <poses file name>"

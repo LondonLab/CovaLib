@@ -11,7 +11,7 @@ class DOCK_Prepare:
         self.rec = rec
         self.lig = lig
 	#self.folder = os.getcwd() + "/"
-        self.folder = os.path.dirname(rec) + "/"
+        self.folder = os.path.dirname(os.path.abspath(rec)) + "/"
         self.fixed_rec = self.folder + "rec.pdb"
         self.fixed_lig = self.folder + "xtal-lig.pdb"
         self.cov = cov
@@ -20,7 +20,7 @@ class DOCK_Prepare:
         PyUtils.initPythonVs()
     def blaster(self):
         self.create_fixed_names()
-        subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg, "--addhOptions=\" -HIS -FLIPs \"  -v"])
+        subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg])
     def changeIndock(self):
         INDOCK = self.folder + "INDOCK"
         old = open(INDOCK, 'r')
