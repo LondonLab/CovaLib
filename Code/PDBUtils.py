@@ -40,4 +40,10 @@ def lig(PDB_list_file):
         lig_f.flush()
         os.chdir("..")
 
-
+def changeMolChain(pdb_file, new_chain):
+    with open(pdb_file, 'r') as pfile:
+        lines = pfile.readlines()
+    with open(pdb_file, 'w') as pfile:
+        for line in lines:
+            if line[0] == 'H':
+                pfile.write(line[:17] + new_chain + line[20:])
