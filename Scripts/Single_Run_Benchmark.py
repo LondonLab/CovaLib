@@ -4,20 +4,23 @@ sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 #sys.path.append('{0}/CovaLib'.format(os.environ['HOME']))
 from Code import *
 
-OUTPUT_DIRECTORY = "Run"
-COVALENT_LINES  =  "REMARK @@@ covalent residue " 
-
-DOCKING_RUN = "Docking_run"
-
 
 def main(name, argv):
-        if(len(argv) != 1):
-            print_usage(name)
-            return
-        path = argv[0]
-        rb = d_Benchmark.Benchmark(path)
-        rb.run()                        
-
+    """
+    Gets a folder containing the output of Prepare_Benchmark.py script for a single receptor and a 
+    single ligand and runs the preparation steps and docking
+    """
+    if(len(argv) != 1):
+        print_usage(name)
+        return
+    path = argv[0]
+    rb = Benchmark.Benchmark(path)
+    rb.Create_DB2_file()                        
+    #rb.Create_DB2_file_crys()
+    #rb.Prepare_Receptor() 
+    rb.run_docking()
+    rb.post_dock()
+        
 def print_usage(name):
         print "Usage : " + name + " <directory>"
 
