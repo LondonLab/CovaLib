@@ -12,11 +12,11 @@ from Code import PDBUtils
 
 
 DOCKING_RUN_FILES = "Docking_run"
-BASE_RMSD = '/home/rosaliel/chemfarm/Benchmark/Round_14/baseline'
-BASE_SCORE = '/home/rosaliel/chemfarm/Benchmark/Round_14/scores'
+BASE_RMSD = '/home/rosaliel/chemfarm/Benchmark/Round_32/baseline'
+BASE_SCORE = '/home/rosaliel/chemfarm/Benchmark/Round_32/scores'
 
 
-class Analyze_Bechmark(object):
+class Analyzer(object):
     
     def __init__(self, path):  
         """
@@ -28,7 +28,7 @@ class Analyze_Bechmark(object):
         self._get_rmsd_list()
         self._get_scores_list()
         self._get_running_time()
-        self._get_step()
+        #self._get_step()
                 
     #############
     ## Data loading
@@ -86,19 +86,29 @@ class Analyze_Bechmark(object):
             except:
                 pass   
         self.running_time = time_sum
-        
+            
     def _get_step(self):
+        """Deprecaterd"""
         try:
             self.step = float(open(self.path + '../doc').readlines()[-1].split()[-1])
         except:
+            #self.step = "(i, i = 80, 280, 10)"
+            print os.getcwd()
             self.step = open(self.path + '../doc').readlines()[-1].split()[-1]
-        print self.step
+    
+    def _get_rotetable_bond(self):
+        f = open('../benchmark_files/rot_bonds','r')
+        d = dict()
+        for line in f:
+            d[line.split()[0]] = line.split()[1]
+        return d
      
     #############
     ## create data files
     #############
 
     def create_base(self):
+        """Creates a file containing all rmsd values"""
         fout = open('baseline','w')
         fout.write(reduce(lambda x, key: '{0}\n{1:<15}{2}'.format(x, key, str(self.rmsd[key])), self.rmsd, ''))
         pass
@@ -118,7 +128,7 @@ class Analyze_Bechmark(object):
     
     def plot_hist_rmsd(self):
         num_bins =  round( max(self.rmsd.values()))
-        plt.hist(self.rmsd.values(), num_bins, facecolor = 'green')
+        plt.hist(self.rmsd.values(), num_bins, facecolor = '#22D8EC')
         plt.title("RMSD Histogram")
         plt.xlabel("Value")
         plt.ylabel("Frequency")
@@ -144,6 +154,23 @@ class Analyze_Bechmark(object):
         plt.savefig('Size_RMSD')
         #plt.show()
         
+    def plot_rotbonds_rmsd(self):
+        rotbonds = self._get_rotetable_bond()
+        x = list()
+        y = list()
+        for k in self.rmsd.keys():
+            x.append(rotbonds[k])
+            y.append(self.rmsd[k])
+            
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(x, y, linestyle = 'None', marker = 'o', color = '#a328eb')
+        plt.title("Size - RMSD")
+        plt.xlabel("# rotetable bonds")
+        plt.ylabel("RMSD value")
+        plt.savefig('rot_rmsd')
+        plt.show()
+        
     def plot_diff(self):
         ## read baseline rmsds
         base_rmsd = self._read_baseline(BASE_RMSD)
@@ -162,23 +189,24 @@ class Analyze_Bechmark(object):
             except:
                 pass
             
-        ## rmsd's 
+        ## rmsd's. different color if the scor difference between now and baseline is more than 1
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ind_diff_more = [i for i in range(len(diffs)) if abs(diffs[i])>=1]
         ind_diff_less = [i for i in range(len(diffs)) if i not in ind_diff_more]
         ax.plot(range(-1,18), range(-1,18), 'k-', label = 'y = x')
-        ax.plot([x[i] for i in ind_diff_less], [y[i] for i in ind_diff_less] , 'bo',label = 'score diff < 1')
-        ax.plot([x[i] for i in ind_diff_more], [y[i] for i in ind_diff_more] , 'ro', label =  'score diff > 1') 
+        ax.plot([x[i] for i in ind_diff_less], [y[i] for i in ind_diff_less] , linestyle = 'None', marker = 'o', color = '#a328eb',label = 'score diff < 1')#purple
+        ax.plot([x[i] for i in ind_diff_more], [y[i] for i in ind_diff_more] , linestyle = 'None', marker = 'o', color = '#22D8EC', label =  'score diff > 1') #cyan
         
         
-        ## text
+        ## names for data point that diviates from Y=X significantly 
         for i in range(len(x)):
             if abs(x[i]-y[i])>=1:
                 plt.text(x[i], y[i], labels[i], fontsize = 8)
+                
+        ## legend
         ax.legend(loc = 'lower right', fontsize = 11)
-        plt.text(13.5,1,'RMS threshold: '+str(self.step), fontsize = 11)
-        #plt.text(13.5,2,'running time: {0:.2f}'.format(self.running_time), fontsize = 11)
+        plt.text(13.5,2,'running time: {0:.2f}'.format(self.running_time), fontsize = 11)
         plt.text(13.5,3,'mean rmsd:  {0:.2f}'.format(self._calculate_rmsd_mean()), fontsize = 11)
         plt.title("rmsd comparisation")
         plt.ylabel("current rmsd")
@@ -225,9 +253,10 @@ def main(name, argv):
         ab = Analyze_Bechmark(path)
         ab.create_base()
         ab.plot_hist_rmsd()
-        ab.create_scores()
-        ab.create_running_time()
+        #ab.create_scores()
+        #ab.create_running_time()
         ab.plot_diff()
+        #ab.plot_rotbonds_rmsd()
 
 def print_usage(name):
         print "Usage : " + name + " <Run_directory>"

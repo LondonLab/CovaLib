@@ -43,7 +43,7 @@ def lig(PDB_list_file):
         os.chdir("..")
         
 def count_heavy_atom(pdb_path, name = "rec"):
-    """reads the input pdb as a list and as a structre object from BioPython"""
+    """reads the input pdb as a structre object from BioPython"""
     parser = bp.PDBParser()
     structure = parser.get_structure(name, pdb_path)
     return len( [atm for atm in structure.get_atoms() if atm.element is not 'H']) 

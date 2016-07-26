@@ -48,6 +48,7 @@ class DOCKovalent:
             clu = Cluster.Cluster()
             clu.runJobs("dirlist", self.dock_command)
         else:
+            print self.dock_command
             subprocess.call([self.dock_command])
     def combineResults(self):
         subprocess.call([Paths.DOCKBASE + "analysis/extract_all.py", "--done"])

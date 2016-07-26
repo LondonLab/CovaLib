@@ -10,7 +10,7 @@ import os
 class Finder(object):
     def __init__(self, pdb_path, ligand_name, covalent_distance = 2):
         """
-        pdb_path - location of pdb file containing the lifand and the receptor
+        pdb_path - location of pdb file containing the ligand and the receptor
         ligand_name - ligand's name in pdb file
         covalent_distance - the maximal distance between two covalent atoms
         """
@@ -41,12 +41,22 @@ class Finder(object):
                 atoms = atoms + res.get_list()
         ns = bp.NeighborSearch(atoms)
         neighbors = ns.search_all(self.covalent_distance)
+        
         covalent = [cpl for cpl in neighbors if (cpl[0].parent.id[0] == ' ' and cpl[1].parent.id == self.ligand.id) or (cpl[0].parent.id == self.ligand.id and cpl[1].parent.id[0] == ' ' )] # filter only intermolecule bonds      
         covalent = [cpl for cpl in covalent if not (cpl[0].name.startswith('H') or cpl[1].name.startswith('H'))] #filter Hydrogens
         cov_cpl = min(covalent, key = lambda cpl: abs(cpl[0] - cpl[1]))
+        
         ## decouple ligand & receptor covalent atoms
         self.receptor_cov_atom = [atom for atom in cov_cpl if atom.parent.id[0] == ' '][0]
         self.ligand_cov_atom = [atom for atom in cov_cpl if atom.parent.id == self.ligand.id][0]
+        
+    def get_receptor_covalent(self):
+        """get a Bio PDB atom object of the covalent atom of the receptor"""
+        return self.receptor_cov_atom
+    
+    def get_ligand_covalent(self):
+        """get a Bio PDB atom object of the covalent atom of the ligand"""
+        return self.ligand_cov_atom
         
     def print_result(self):
         print 'ligand   covalent atom:'
