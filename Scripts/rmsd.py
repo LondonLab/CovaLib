@@ -44,6 +44,7 @@ def main(argv=[__name__]):
             OEThrow.Warning("Output is the same as input when overlay is false")
 
     rmsdfile = open(rmsdout, 'w')
+    rmsd_values = []
     for mol in ifs.GetOEMols():
         OEThrow.Info(mol.GetTitle())
 
@@ -54,7 +55,7 @@ def main(argv=[__name__]):
         # perform RMSD for all confomers
         OERMSD(rmol, mol, rmsds, automorph, heavy, overlay, rmtx, tmtx)
         rmsdfile.write(str(rmsds[0]) + '\n')
-
+        rmsd_values.append(rmsds[0])
         for conf in mol.GetConfs():
             cidx = conf.GetIdx()
             OEThrow.Info("Conformer %i : rmsd = %f" % (cidx, rmsds[cidx]))
@@ -67,6 +68,10 @@ def main(argv=[__name__]):
             OEWriteMolecule(ofs, mol)
 
     rmsdfile.close()
+    if len(rmsd_values) > 0:
+        print min(rmsd_values)
+    else:
+        print 'error: not the same atoms in both molecules'
     return 0
 
 #############################################################################
