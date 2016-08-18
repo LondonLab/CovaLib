@@ -1,6 +1,7 @@
 import subprocess
 import sys
-sys.path.append("/home/labs/londonir/danielza/CovaLib")
+import os
+sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
 
 def main(name, argv):

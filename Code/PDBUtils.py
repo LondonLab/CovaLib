@@ -48,4 +48,10 @@ def count_heavy_atom(pdb_path, name = "rec"):
     structure = parser.get_structure(name, pdb_path)
     return len( [atm for atm in structure.get_atoms() if atm.element is not 'H']) 
 
-
+def changeMolChain(pdb_file, new_chain):
+    with open(pdb_file, 'r') as pfile:
+        lines = pfile.readlines()
+    with open(pdb_file, 'w') as pfile:
+        for line in lines:
+            if line[0] == 'H':
+                pfile.write(line[:17] + new_chain + line[20:])
