@@ -15,7 +15,7 @@ def main(name, argv):
 		if not(inside) and line[0] == '#':
 			i += 1
 			inside = True
-			poses_f = open('poses/poses' + str(i) + '.mol2', 'w')
+			poses_f = open('poses/' + line[47:-3]  + '.mol2', 'w')
 		if not line[0] == '#':
 			inside = False
 		poses_f.write(line)
