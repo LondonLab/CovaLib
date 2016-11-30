@@ -12,7 +12,8 @@ class DOCKovalent:
     def __init__(self, folder_name, compound, library = False):
 	self.folder = os.getcwd() + "/"
         self.name = self.folder + folder_name + "/"
-        self.compound = os.path.abspath(compound)
+        #self.compound = os.path.abspath(compound)[5:]
+        self.compound = compound
         self.library = library
         PyUtils.create_folder(self.name)
         self.copyIndock()
@@ -48,7 +49,6 @@ class DOCKovalent:
             clu = Cluster.Cluster()
             clu.runJobs("dirlist", self.dock_command)
         else:
-            print self.dock_command
             subprocess.call([self.dock_command])
     def combineResults(self):
         subprocess.call([Paths.DOCKBASE + "analysis/extract_all.py", "--done"])

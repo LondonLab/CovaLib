@@ -65,8 +65,8 @@ def main(name, argv):
     
     subprocess.call(["cat"] + files, stdout = f_conf_pdb)
     params_name = argv[4] + '.params'
-    #with open(params_name, 'a') as fparams:
-    #    fparams.write("PDB_ROTAMERS " + argv[4] + "_confs.pdb\n")
+    with open(params_name, 'a') as fparams:
+        fparams.write("PDB_ROTAMERS " + argv[4] + "_confs.pdb\n")
     rparams = Relax_Params.Relax_Params(params_name, cov_name[1:])
     rparams.process()
     rparams.add_connect()
@@ -80,7 +80,8 @@ def main(name, argv):
     rparams.close()
     shutil.move('new.params', params_name)
     rec_ex = os.path.abspath(argv[1][:-4] + 'e.pdb')
-    subprocess.call([Paths.PDBUTILS + 'extract_chains_and_range.pl', '-p', argv[1], '-c', argv[5], '-o', rec_ex])
+    #subprocess.call([Paths.PDBUTILS + 'extract_chains_and_range.pl', '-p', argv[1], '-c', argv[5], '-o', rec_ex])
+    shutil.copyfile(argv[1], rec_ex)
     rec_x = os.path.abspath(argv[1][:-4] + 'x.pdb')
     rec_f = open(rec_x , 'w')
     for line in open(rec_ex, 'r'):
@@ -120,6 +121,7 @@ def main(name, argv):
         rec_cov_atom = 'SG'
     elif cov_res_name == 'THR':
         rec_cov_atom = 'OG1'
+    lig_num = 145
     cst_f.write('AtomPair ' + cov_name + ' ' + str(lig_num) + ' ' + rec_cov_atom + ' ' + str(res_num) + ' HARMONIC 1.8 0.05\n')
     cst_f.write('Angle CB ' + str(res_num) + ' ' + rec_cov_atom + ' ' + str(res_num) + ' ' + cov_name + ' ' + str(lig_num) + ' HARMONIC 1.91 0.17\n')
     for con in con_atoms:
@@ -129,10 +131,11 @@ def main(name, argv):
         cst_f.write('Angle ' + rec_cov_atom + ' ' + str(res_num) + ' ' + cov_name + ' ' + str(lig_num) + ' ' + con2  + ' ' + str(lig_num) + ' HARMONIC 1.91 0.17\n')
     cst_f.close()
     flags_f = open('relax.flags', 'w')
-    flags_f.write('-extra_res_fa ' + argv[4]+ '.params\n-nstruct 2\n-packing::ex1\n-packing::ex1aro\n-packing::ex2\n-packing::extrachi_cutoff 1\n-in:file:fullatom\n-relax:fast\n-cst_fa_file cst \n-cst_fa_weight 1.0\n#-fix_disulf ss \n-relax:constrain_relax_to_start_coords\n')
+    flags_f.write('-extra_res_fa ' + argv[4]+ '.params\n-nstruct 50\n-packing::ex1\n-packing::ex1aro\n-packing::ex2\n-packing::extrachi_cutoff 1\n-in:file:fullatom\n-relax:fast\n-cst_fa_file cst \n-cst_fa_weight 1.0\n#-fix_disulf ss \n-relax:constrain_relax_to_start_coords\n')
     flags_f.close()
     clu = Cluster.Cluster()
-    clu.runCommandsArgs('/work/londonlab/Rosetta/main/source/bin/relax.linuxgccrelease -s ' + rec_lig + ' -native ' + rec_lig + ' -extra_res_fa /work/londonlab/Rosetta/main/database/chemical/residue_type_sets/fa_standard/residue_types/sidechain_conjugation/CYX.params @relax.flags -overwrite true -out:prefix', range(1))
+    #clu.runCommandsArgs('/work/londonlab/Rosetta/main/source/bin/relax.linuxgccrelease -s ' + rec_lig + ' -native ' + rec_lig + ' -extra_res_fa /work/londonlab/Rosetta/main/database/chemical/residue_type_sets/fa_standard/residue_types/sidechain_conjugation/CYX.params @relax.flags -overwrite true -out:prefix', range(10))
+    clu.runCommandsArgs('/work/londonlab/Rosetta/main/source/bin/relax.linuxgccrelease -s ' + rec_lig + ' -native ' + rec_lig + ' -extra_res_fa /work/londonlab/Rosetta/main/database/chemical/residue_type_sets/fa_standard/residue_types/sidechain_conjugation/CYX.params -extra_res_fa ../GDP.params @relax.flags -overwrite true -out:prefix', range(10))
 def print_usage(name):
     print "Usage : " + name + " <mol2 file> <rec pdb file> <covalent residue index> <covalent atom number> <prefix for files> <chain in pdb> <optional - alternative smiles + covalent atom should match the conformations and not the original>"
 

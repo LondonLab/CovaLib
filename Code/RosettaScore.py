@@ -12,7 +12,7 @@ class RosettaScore:
         self.scores = []
         for run in range(runs):
             with open(str(run) + 'score.sc', 'r') as f:
-                lines = f.readlines()
+                lines = f.readlines()[-1 * runs :]
             for model, line in enumerate(lines[2:]):
                 self.scores.append((float(line.split()[1]), run, model + 1))
     def getScores(self):

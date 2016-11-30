@@ -6,7 +6,8 @@ import socket
 import chemfarm_job_submission as cjob
 class Cluster:
 	def __init__(self):
-		self.getServer()
+		#self.getServer()
+		self.typ = "CHEM"
 	def runSingle(self, command):
 		if(self.typ == "WEXAC"):
 			subprocess.call(["bsub", "-u", "/dev/null", "-R", "rusage[mem=1024]", "-q", "new-all.q", "-o", "out", "-e", "err", command])
@@ -19,15 +20,16 @@ class Cluster:
 			for line in cjob.sendjob_text[8:]:
 				cur_job.write(line)
 			cur_job.close()
-			subprocess.call(["qsub", job_file])
+			subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
 	def runCommands(self, commands):
 		for command in commands:
 			self.runSingle(command)
 	def runDirSingle(self, dirname, command):
 		PyUtils.create_folder(dirname[:-1])
+		curr = os.getcwd()
 		os.chdir(dirname[:-1])
 		self.runSingle(command)
-		os.chdir('../')
+		os.chdir(curr)
 	def runDirCommands(self, dirlist, commands):
 		self.checkList(dirlist, commands)
 		f = open(dirlist, 'r')
@@ -36,25 +38,6 @@ class Cluster:
 			self.runDirSingle(dirname, command)
 		f.close()
 	def runJobs(self, dirlist, command):
-		'''f = open(dirlist, 'r')
-		for job in f:
-			PyUtils.create_folder(job[:-1])
-			os.chdir(job[:-1])
-			if(self.typ == "WEXAC"):
-				subprocess.call(["bsub", "-u", "/dev/null", "-R", "rusage[mem=1024]", "-q", "new-all.q", "-o", "out", "-e", "err", command])
-			if(self.typ == "CHEM"):
-				job_file = "../job_submission.sh"
-				cur_job = open(job_file, 'w')
-				for line in cjob.sendjob_text[:7]:
-					cur_job.write(line)
-				cur_job.write(cjob.sendjob_text[7] + command)
-				for line in cjob.sendjob_text[8:]:
-					cur_job.write(line)
-				cur_job.close()
-				subprocess.call(["qsub", job_file])
-			self.runSingle()
-			os.chdir("../")
-		f.close()'''
 		f = open(dirlist, 'r')
 		lines = f.readlines()
 		commands = [command] * len(lines)
@@ -62,21 +45,6 @@ class Cluster:
 		self.runDirCommands(dirlist, commands)
 		
         def runJobsArgs(self, dirlist, command, arglist):
-                '''f = open(dirlist, 'r')
-                i = 0
-                for job in f:
-                        PyUtils.create_folder(job[:-1])
-                        os.chdir(job[:-1])
-                        if(len(arglist) < i + 1):
-                                print "arglist is not the same length as dirlist"
-                                sys.exit()
-                        if(self.typ == "WEXAC"):
-                                subprocess.call(["bsub", "-u", "/dev/null", "-R", "rusage[mem=1024]", "-q", "new-all.q", "-o", "out", "-e", "err", command, str(arglist[i])])
-                        if(self.typ == "CHEM"):
-				subprocess.call(["qsub", "-q", "medium", "-l", "select=1:ncpus=1:mem=10gb", "-j", "eo", "--", command])
-			os.chdir("../")
-                        i += 1
-                f.close()'''
 		self.checkList(dirlist, arglist)
 		commands = []
 		for arg in arglist:

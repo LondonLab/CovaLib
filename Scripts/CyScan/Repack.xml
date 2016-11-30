@@ -1,0 +1,32 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+      <t14 weights="talaris2014" />
+    </SCOREFXNS>
+    <RESIDUE_SELECTORS>
+      <Index name="NewCys" resnums="%%pos%%" />
+      <Neighborhood name="Area" selector=NewCys distance=10.0 />
+      <Not name="Rest" selector=Area />
+      <Or name="Rest_Cys" selectors=Rest,NewCys />
+    </RESIDUE_SELECTORS>
+    <TASKOPERATIONS>
+      <OperateOnResidueSubset name=repack_area selector=Area >
+	<RestrictToRepackingRLT />
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name=no_pack selector=Rest_Cys >
+	<PreventRepackingRLT />
+      </OperateOnResidueSubset>
+    </TASKOPERATIONS>
+    <FILTERS>
+    </FILTERS>
+    <MOVERS>
+      <MutateResidue name="CysMutate" target="%%pos%%" new_res="CYS" />
+      <PackRotamersMover name="repack_mover" scorefxn=t14 task_operations=repack_area,no_pack />
+    </MOVERS>
+    <APPLY_TO_POSE>
+    </APPLY_TO_POSE>
+    <PROTOCOLS>
+      #Add mover=CysMutate />
+      <Add mover=repack_mover />
+    </PROTOCOLS>
+    <OUTPUT />
+</ROSETTASCRIPTS>

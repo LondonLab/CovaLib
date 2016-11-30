@@ -11,6 +11,7 @@ import sys
 class Compound:
     def __init__(self, arr):
         self.arr = arr
+        self.polarity = float(arr[15])
         self.name = arr[2]
         self.heavy_atoms = int(arr[7])
         self.score = float(arr[-1])
@@ -22,6 +23,15 @@ class Compound:
         return line
     def getRelScore(self):
         return self.score / self.heavy_atoms
+    def getRelSmall(self):
+        if self.heavy_atoms < 10:
+            return self.score / self.heavy_atoms
+        else:
+            return 100
+    def getBigMols(self):
+        return self.heavy_atoms > 11
+    def getSmallPolarity(self):
+        return self.polarity < 7
     def __eq__(self, other):
         return self.name == other.name
     def getName(self):
@@ -33,15 +43,25 @@ class Result_List:
         if(file_name == None):
             return
         f = open(file_name, 'r')
+        #CHANGE IF YOU WANT MORE THAN THE TOP 500 RESULTS TO BE ASSESED
+        i = 0
         for line in f:
             self.res_list.append(Compound(line.split()))
+            i += 1
+            if i == 500:
+                break
         f.close()
     def getList(self):
         return self.res_list
     def setList(self, nlist):
         self.res_list = nlist
-    def sortList(self, fun):
+    def sortList(self, fun, file_name, num):
         self.res_list = sorted(self.res_list, key = fun)
+        with open(file_name, 'w') as f:
+            for i in range(min(num, len(self.res_list))):
+                f.write(str(fun(self.res_list[i])) + '\n')
+    def filterList(self, fun):
+        self.res_list = [x for x in self.res_list if fun(x)]
     def writeList(self, output, num = None):
         if(num == None):
             num = len(self.res_list)
@@ -51,6 +71,10 @@ class Result_List:
         f.close()
     def removeSubList(self, other, num):
         self.res_list = [x for x in self.res_list if x not in other.res_list[:num]]
+    def remainSubList(self, index_list):
+        print len(self.res_list)
+        print len(index_list)
+        self.res_list = [self.res_list[i] for i in index_list]
     def findIndex(self, name):
         comp = Compound([0,0,name,0,0,0,0,0,0,0,0,0,0,0,0])
         if(comp not in self.res_list):
@@ -73,5 +97,12 @@ class Result_List:
         arr = []
         for ind in open(indexlist, 'r'):
             arr.append(self.res_list[int(ind) - 1])
+        newList.setList(arr)
+        newList.writeList(output)
+    def writeIndexListObj(self, f_list, output):
+        newList = Result_List()
+        arr = []
+        for ind in f_list:
+            arr.append(self.res_list[ind])
         newList.setList(arr)
         newList.writeList(output)

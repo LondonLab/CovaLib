@@ -7,10 +7,10 @@ import Paths
 import PyUtils
 
 class DOCK_Prepare:
-    def __init__(self, rec, lig, cov, cov_index, HG):
+    def __init__(self, rec, lig, cov, cov_index, HG, tart=False):
+        self.tart = bool(tart)
         self.rec = rec
         self.lig = lig
-	#self.folder = os.getcwd() + "/"
         self.folder = os.path.dirname(os.path.abspath(rec)) + "/"
         self.fixed_rec = self.folder + "rec.pdb"
         self.fixed_lig = self.folder + "xtal-lig.pdb"
@@ -20,7 +20,12 @@ class DOCK_Prepare:
         PyUtils.initPythonVs()
     def blaster(self):
         self.create_fixed_names()
-        subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg])
+        if not self.tart:
+            subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg])
+        else:
+            print 'tarting'
+            subprocess.call([Paths.DOCKBASE + "proteins/blastermaster/blastermaster.py", "--covalentResNum", self.cov_index, "--covalentResName", self.cov, "--covalentResAtoms", self.hg, "--chargeFile=" + self.folder + "amb.crg.oxt", "--vdwprottable=" + self.folder + "prot.table.ambcrg.ambH"])
+        
     def changeIndock(self):
         INDOCK = self.folder + "INDOCK"
         old = open(INDOCK, 'r')

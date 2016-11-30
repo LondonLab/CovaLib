@@ -39,13 +39,13 @@ def main(name, argv):
     # iterating through every receptor in list
     for line in list_pdbs:
         # Parsing the line of the pdb list: <PDB id><chain>
-        name = line.strip()[:-1]
-        chain = line.strip()[-1]
-        
+        name = line.split()[0]
+        chain = line.split()[-1]
+        print name
+        print chain
         # Searches the matching line in the summary file
         pattern = "{0}\s+{1}".format(name, chain)
         line_summary = [i for i in summary_file if re.search(pattern, i) != None]
-        
         # If one receptors have multiple ligads in PDB list file
         count = 1 if prev_name != name else count
         prev_name = name

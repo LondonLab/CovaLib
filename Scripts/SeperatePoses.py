@@ -10,12 +10,15 @@ def main(name, argv):
                 return
 	PyUtils.create_folder('poses')
 	i = 0
+	j = 1
 	inside = False
         for line in open(argv[0], 'r'):
 		if not(inside) and line[0] == '#':
 			i += 1
 			inside = True
-			poses_f = open('poses/' + line[47:-3]  + '.mol2', 'w')
+			#poses_f = open('poses/' + line[47:-3]  + '.mol2', 'w')
+			poses_f = open('poses/' + str(j) + '.mol2', 'w')
+			j += 1
 		if not line[0] == '#':
 			inside = False
 		poses_f.write(line)
