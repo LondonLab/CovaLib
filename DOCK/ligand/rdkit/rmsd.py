@@ -19,19 +19,13 @@ def rmsdAllConf(file_name_in,file_name_ref):
 
 
 def main(options):
-    #import sys
-    #file = sys.argv[1]
-    #ref = sys.argv[2]
+
     file = options.prob_mol
     ref = options.ref_mol
     #print rmsdAllConf(file,ref)
     print rmsdFirstConf(file,ref)
   
 
-
-#if __name__ == "__main__":
-#    main()
-#if -1 != string.find(sys.argv[0], "mol2db2.py") and __name__ == '__main__':
 if __name__=='__main__':
   usage= 'python rmsd.py --probe=<probe_mol2_file> --ref=<ref_mol2_file>\n[-d (one2many rmsd) directory of probes files]\n[-m (many2many rmsd) directory of references files]'
   desc='Calculate probe molecule rmsd relative to reference molecule'
