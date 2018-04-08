@@ -2,19 +2,6 @@ import rdkit.Chem as rdk
 import rdkit.Chem.AllChem as chm
 from optparse import OptionParser
 
-def align(file_name1,file_name2,file_out): 
-    mol1 = rdk.MolFromMol2File(file_name1)
-    rdk.RemoveHs(mol1)
-    mol2 = rdk.MolFromMol2File(file_name2)
-    rdk.RemoveHs(mol2)
-    rmsd = chm.AlignMol(mol1,mol2)
-    
-    w = rdk.PDBWriter(file_out)
-    w.write(mol1)
-    w.close()
-    
-    return rmsd
-
 def rmsdFirstConf(file_name_in,file_name_ref):
     in_mol = rdk.MolFromPDBFile(file_name_in)
     ref = rdk.MolFromPDBFile(file_name_ref)
