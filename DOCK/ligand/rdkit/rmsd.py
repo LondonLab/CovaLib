@@ -1,5 +1,6 @@
 import rdkit.Chem as rdk
 import rdkit.Chem.AllChem as chm
+from optparse import OptionParser
 
 def align(file_name1,file_name2,file_out): 
     mol1 = rdk.MolFromMol2File(file_name1)
@@ -29,15 +30,30 @@ def rmsdAllConf(file_name_in,file_name_ref):
     return rmsd_arr
 
 
-import sys
-def main():
-    file = sys.argv[1]
-    ref = sys.argv[2]
+
+def main(options):
+    #import sys
+    #file = sys.argv[1]
+    #ref = sys.argv[2]
+    file = options.prob_mol
+    ref = options.ref_mol
     #print rmsdAllConf(file,ref)
     print rmsdFirstConf(file,ref)
   
 
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
+#if -1 != string.find(sys.argv[0], "mol2db2.py") and __name__ == '__main__':
+if __name__=='__main__':
+  usage= 'python rmsd.py --probe=<probe_mol2_file> --ref=<ref_mol2_file>\n[-d (one2many rmsd) directory of probes files]\n[-m (many2many rmsd) directory of references files]'
+  desc='Calculate probe molecule rmsd relative to reference molecule'
+  parser = OptionParser(usage=usage,description=desc)
+  parser.add_option("-r","--ref",type="string",action="store", dest="ref_mol",help="reference mol2 file")  
+  parser.add_option("-p","--probe" ,type="string",action="store",dest="prob_mol",help="probe mol2 file")
 
+  options, args = parser.parse_args()  # default reads from argv[1:]
+  if 0 != len(args) or not options.ref_mol or not options.prob_mol:
+    parser.error("rmsd.py takes no positional arguments\n" +
+                 "  Use --help for more information")
+  main(options)
