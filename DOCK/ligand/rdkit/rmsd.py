@@ -7,7 +7,7 @@ def align(file_name1,file_name2,file_out):
     rdk.RemoveHs(mol1)
     mol2 = rdk.MolFromMol2File(file_name2)
     rdk.RemoveHs(mol2)
-    rmds = chm.AlignMol(mol1,mol2)
+    rmsd = chm.AlignMol(mol1,mol2)
     
     w = rdk.PDBWriter(file_out)
     w.write(mol1)
