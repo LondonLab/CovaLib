@@ -5,8 +5,6 @@ import sys
 
 
 
-mol = rdk.MolFromMol2File(sys.argv[1],removeHs=False)
-
 def prop2neighbours(atom):
     for a in atom.GetNeighbors():
         if a.GetIdx() in tracker:
@@ -21,10 +19,13 @@ def prop2neighbours(atom):
             core.add(a.GetIdx())
 #            prop2neighbours(a)
 
-tracker = set()
-core = set()
+
 
 def findCore(mol):
+
+    tracker = set()
+    core = set()
+
     for a in mol.GetAtoms():
         if a.GetSymbol()=='Si':
             tracker.add(a.GetIdx())
@@ -35,56 +36,60 @@ def findCore(mol):
                 if a_i.GetSymbol()=='C':
                     prop2neighbours(a_i)
 
+    atoms2remove = []
+    for a in mol.GetAtoms():
+        if a.GetIdx() not in core:
+	    atoms2remove.append(a.GetIdx())
+	
+    atoms2remove.sort(reverse=True)
+
+    em = rdk.EditableMol(mol)
+    for i in atoms2remove:
+        em.RemoveAtom(i)
+
+    return em.GetMol(),core
 
 
+def main():
+	mol = rdk.MolFromMol2File(sys.argv[1],removeHs=False)
+	c,core = findCore(mol)
 
-findCore(mol)
+	w = rdk.PDBWriter('core.pdb')
+	w.write(c)
+	w.close()
 
-atoms2remove = []
-for a in mol.GetAtoms():
-    if a.GetIdx() not in core:
-        atoms2remove.append(a.GetIdx())
-atoms2remove.sort(reverse=True)
-
-em = rdk.EditableMol(mol)
-for i in atoms2remove:
-    em.RemoveAtom(i)
-
-w = rdk.PDBWriter('core.pdb')
-w.write(em.GetMol())
-w.close()
-
-c = em.GetMol()
-for a in c.GetAtoms():
-    print a.GetSymbol()
+#	for a in c.GetAtoms():
+#	    print a.GetSymbol()
 
 
-# create conf
+	# create conf
 
-import random
+	import random
 
-w = rdk.PDBWriter('rdkit_conf.pdb')
-num_conf = int(sys.argv[2])
-seed_track = set()	
+	w = rdk.PDBWriter('rdkit_conf.pdb')
+	num_conf = int(sys.argv[2])
+	seed_track = set()	
 
-output_mol = None
+	output_mol = None
 
-for i in range(0,num_conf):
-    new_mol = rdk.Mol(mol)
-    seed = 0
-    while seed==0 or seed in seed_track:
-    	seed = random.randrange(0,32000)
-    seed_track.add(seed)
-    #print seed
-    chm.ConstrainedEmbed(new_mol,c,randomseed=seed)
-    conf = new_mol.GetConformer(0)
-    conf.SetId(i)
-    if output_mol is None:
-         output_mol = rdk.Mol(new_mol)
-    else:
-        for j in core:
-	    conf.SetAtomPosition(j,output_mol.GetConformer(0).GetAtomPosition(j))
-        output_mol.AddConformer(conf)
-w.write(output_mol)
-w.close()
+	for i in range(0,num_conf):
+	    new_mol = rdk.Mol(mol)
+	    seed = 0
+	    while seed==0 or seed in seed_track:
+	    	seed = random.randrange(0,32000)
+	    seed_track.add(seed)
+	    #print seed
+	    chm.ConstrainedEmbed(new_mol,c,randomseed=seed)
+	    conf = new_mol.GetConformer(0)
+	    conf.SetId(i)
+	    if output_mol is None:
+		 output_mol = rdk.Mol(new_mol)
+	    else:
+		for j in core:
+		    conf.SetAtomPosition(j,output_mol.GetConformer(0).GetAtomPosition(j))
+		output_mol.AddConformer(conf)
+	w.write(output_mol)
+	w.close()
 
+if __name__=='__main__':
+	main()
