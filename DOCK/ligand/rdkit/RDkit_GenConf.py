@@ -5,7 +5,7 @@ import sys
 
 
 
-def prop2neighbours(atom):
+def prop2neighbours(atom,tracker,core):
     for a in atom.GetNeighbors():
         if a.GetIdx() in tracker:
             continue
@@ -34,7 +34,7 @@ def findCore(mol):
                 tracker.add(a_i.GetIdx())
                 core.add(a_i.GetIdx())
                 if a_i.GetSymbol()=='C':
-                    prop2neighbours(a_i)
+                    prop2neighbours(a_i,tracker,core)
 
     atoms2remove = []
     for a in mol.GetAtoms():
