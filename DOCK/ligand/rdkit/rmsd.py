@@ -4,12 +4,16 @@ from optparse import OptionParser
 import math 
 
 def rmsdFirstConf(file_name_in,file_name_ref):
-    in_mol = rdk.MolFromMol2File(file_name_in,removeHs=False)
-    ref = rdk.MolFromMol2File(file_name_ref,removeHs=False)
-    rmsd = getRmsdImmobile(in_mol,ref)
-    #o3a_alignment = chm.GetO3A(in_mol,ref)
-    #rmsd = o3a_alignment.Align()
+    in_mol = rdk.MolFromMol2File(file_name_in)#,removeHs=False)
+    ref = rdk.MolFromMol2File(file_name_ref)#,removeHs=False)
+    #print in_mol.HasSubstructMatch(ref)
+    #rmsd = chm.AlignMol(in_mol,ref,maxIters=0)
     #rmsd = chm.GetBestRMS(in_mol,ref,0,0)
+
+    o3a_alignment = chm.GetO3A(in_mol,ref,maxIters=0)
+    matches = o3a_alignment.Matches()
+    rmsd = getRmsdImmobile(in_mol,ref,atomMap=matches)
+
     return file_name_in,rmsd
 
 def rmsdAllConf(file_name_in,file_name_ref):
