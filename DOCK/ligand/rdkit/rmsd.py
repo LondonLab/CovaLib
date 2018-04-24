@@ -1,54 +1,61 @@
 import rdkit.Chem as rdk
 import rdkit.Chem.AllChem as chm
+import rdkit.Geometry.rdGeometry as gt
 from optparse import OptionParser
 import math 
+import networkx as nx
+import networkx.algorithms.isomorphism as iso
 
-def rmsdFirstConf(file_name_in,file_name_ref):
-    in_mol = rdk.MolFromMol2File(file_name_in)#,removeHs=False)
-    ref = rdk.MolFromMol2File(file_name_ref)#,removeHs=False)
-    #print in_mol.HasSubstructMatch(ref)
-    #rmsd = chm.AlignMol(in_mol,ref,maxIters=0)
-    #rmsd = chm.GetBestRMS(in_mol,ref,0,0)
+def rdkMolToNetworkxGraph(mol):
+    G = nx.Graph()
+    for a in mol.GetAtoms():
+        G.add_node(a.GetIdx())
+    for b in mol.GetBonds():
+        G.add_edge(b.GetBeginAtomIdx(),b.GetEndAtomIdx())
+    return G
 
-    o3a_alignment = chm.GetO3A(in_mol,ref,maxIters=0)
-    matches = o3a_alignment.Matches()
-    rmsd = getRmsdImmobile(in_mol,ref,atomMap=matches)
-
-    return file_name_in,rmsd
-
-def rmsdAllConf(file_name_in,file_name_ref):
-    rmsd_arr = []
-    in_mol = rdk.MolFromPDBFile(file_name_in)
-    ref = rdk.MolFromPDBFile(file_name_ref)
-    for i,conf in enumerate(in_mol.GetConformers()):
-        rmsd_arr.append(chm.GetBestRMS(in_mol,ref,i,0))
-    return rmsd_arr
+def getGraphIsoIter(mol,ref):
+    M = rdkMolToNetworkxGraph(mol)
+    R = rdkMolToNetworkxGraph(ref)
+    GM = iso.GraphMatcher(M,R)
+    GM.is_isomorphic()
+    return GM.isomorphisms_iter()
 
 
-def getRmsdImmobile(prbMol, refMol,
-  prbConfId = -1, refConfId = -1, atomMap = None):
-  refConf = refMol.GetConformer(refConfId)
-  prbConf = prbMol.GetConformer(prbConfId)
-  if (not atomMap):
+def getRmsdImmobile(prbMol, refMol,atomDic,prbConfId = 0, refConfId = 0):
+    refConf = refMol.GetConformer(refConfId)
+    prbConf = prbMol.GetConformer(prbConfId)  
     atomMap = []
-    for i in range(0, refMol.GetNumAtoms()):
-      if (refMol.GetAtomWithIdx(i).GetAtomicNum() == 1):
-        continue
-      atomMap.append((i, i))
-  sqDist = 0.0
-  for pair in atomMap:
-    sqDist += (prbConf.GetAtomPosition(pair[0]) \
-      - refConf.GetAtomPosition(pair[1])).LengthSq()
-  sqDist /= float(len(atomMap))
-  return math.sqrt(sqDist)
+    for k,v in atomDic.iteritems():
+        atomMap.append([k,v])
+    #print '***********'
+    #print atomMap
+    sqDist = 0.0
+    for pair in atomMap:
+        d = prbConf.GetAtomPosition(pair[0]).Distance(refConf.GetAtomPosition(pair[1]))
+        #print pair[0],pair[1],d
+        sqDist += d*d
+    sqDist /= float(len(atomMap))
+    return math.sqrt(sqDist)
+
+def best_rmsd_firstConf(file_mol,file_ref):
+    mol = rdk.MolFromMol2File(file_mol)
+    ref = rdk.MolFromMol2File(file_ref)
+
+    bestRmsd = None
+    iso_matches_iter = getGraphIsoIter(mol,ref)
+    for m in iso_matches_iter:
+        rmsd = getRmsdImmobile(mol,ref,m)
+        if bestRmsd is None or rmsd<bestRmsd:
+            bestRmsd = rmsd
+    return bestRmsd
 
 def main(options):
+    
+    mol_f = options.prob_mol
+    ref_f = options.ref_mol
 
-    file = options.prob_mol
-    ref = options.ref_mol
-    #print file,ref
-    #print rmsdAllConf(file,ref)
-    print rmsdFirstConf(file,ref)
+    print best_rmsd_firstConf(mol_f,ref_f)
   
 
 if __name__=='__main__':
