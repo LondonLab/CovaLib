@@ -10,6 +10,7 @@ def main(options):
 
     if not out_f:
 	out_f = 'c_'+mol_f
+    #print '---> output file:',out_f
 
     mol_list=m2a.read_Mol2_file(mol_f)
     ref = (m2a.read_Mol2_file(ref_f))[0]
@@ -26,7 +27,7 @@ if __name__=='__main__':
   parser = OptionParser(usage=usage,description=desc)
   parser.add_option("-r","--ref",type="string",action="store", dest="ref_mol",help="reference mol2 file")  
   parser.add_option("-p","--probe" ,type="string",action="store",dest="probe_mol",help="probe mol2 file")
-  #parser.add_option("-o","--out_file" ,type="string",action="store",dest="out_file",help="the chargerd molecule output file name")
+  parser.add_option("-o","--out_file" ,type="string",action="store",dest="out_file",help="the chargerd molecule output file name")
 
 
   options, args = parser.parse_args()  # default reads from argv[1:]
