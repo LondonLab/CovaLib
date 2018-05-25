@@ -13,7 +13,8 @@ def prop2neighbours(atom,tracker,core):
             tracker.add(a.GetIdx())
             core.add(a.GetIdx())
             continue
-	if a.GetSymbol()=='C':
+	else:
+#	if a.GetSymbol()=='C' or a.GetSymbol()=='N':
 #        if str(a.GetHybridization())=='SP2':
             tracker.add(a.GetIdx())
             core.add(a.GetIdx())
@@ -33,7 +34,7 @@ def findCore(mol):
             for a_i in a.GetNeighbors():
                 tracker.add(a_i.GetIdx())
                 core.add(a_i.GetIdx())
-                if a_i.GetSymbol()=='C':
+                if a_i.GetSymbol()=='C' or a_i.GetSymbol()=='S': # assumption SiH3 - link to either C or S
                     prop2neighbours(a_i,tracker,core)
 
     atoms2remove = []
@@ -54,9 +55,9 @@ def main():
 	mol = rdk.MolFromMol2File(sys.argv[1],removeHs=False)
 	c,core = findCore(mol)
 
-	w = rdk.PDBWriter('core.pdb')
-	w.write(c)
-	w.close()
+#	w = rdk.PDBWriter('core.pdb')
+#	w.write(c)
+#	w.close()
 
 #	for a in c.GetAtoms():
 #	    print a.GetSymbol()
