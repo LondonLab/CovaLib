@@ -21,10 +21,12 @@ class PosesHBonds:
             for line in f_rec:
                 if 'ATOM' in line:
                     self.rec_lines.append(line)
+        cwd = os.getcwd()
         os.chdir(self.name)
         self.seperate_poses()
         self.poses2pdb()
-        os.chdir("../")
+        self.threshold = 2
+        os.chdir(cwd)
     #Inner functions
     def seperate_poses(self):
         subprocess.call(['python', Paths.SCRIPTS + 'SeperatePoses.py', 'poses.mol2'])
@@ -41,18 +43,23 @@ class PosesHBonds:
                     if 'heavy atom count' in line:
                         heavy_atoms = int(line.split()[-1])
                         break
-            if surface < 200 or surface / heavy_atoms < 14.5:
-                self.counters.append(0)
-                continue
-            if '[N+](=O)[O-]' in smile_line or smile_line.count('N') + smile_line.count('O') + smile_line.count('n') + smile_line.count('o') > 4:
-                self.counters.append(0)
-                continue
+            #if surface < 200 or surface / heavy_atoms < 14.5:
+            #    self.counters.append(0)
+            #    continue
+            #if '[N+](=O)[O-]' in smile_line or smile_line.count('N') + smile_line.count('O') + smile_line.count('n') + smile_line.count('o') > 4:
+            #    self.counters.append(0)
+            #    continue
+            #Remove comment to filter for phosphates
+            #if 'P' in smile_line:
+            #    self.counters.append(0)
+            #    continue
             pdb_pose = '../recs/' + i[:-4] + 'pdb'
-            subprocess.call(['convert.py', i, pdb_pose])
+            subprocess.call(['python', Paths.SCRIPTS + 'ChemChem/convert.py', i, pdb_pose])
             hetatm = []
             with open(pdb_pose, 'r') as f_pdb:
                 for line in f_pdb:
-                    if 'HETATM' in line:
+                    #if 'HETATM' in line:
+                    if 'ATOM' in line:
                         hetatm.append(line[:23] + ' -1' + line[26:])
             rec_pose = '../recs/rec_' + i[:-4] + 'pdb'
             with open(rec_pose, 'w') as f_rec:
@@ -75,14 +82,14 @@ class PosesHBonds:
             self.counters.append(counter)
             os.remove(rec_pose)
         os.chdir('../')
-        shutil.rmtree('recs')
+        #shutil.rmtree('recs')
         shutil.rmtree('poses')
     def countHbonds(self, hb_file):
         counter = 0
         with open(hb_file, 'r') as hb_f:
             for line in hb_f:
-                if not line[0] == 'N' and line.split()[1] in self.res_list:
+                if line.split()[1] in self.res_list: #not line[0] == 'N' and 
                     counter += 1
         return counter
     def getList(self):
-        return [a[0] for a in sorted([(i, e) for i, e in enumerate(self.counters) if e != 0], key=lambda tup: tup[1], reverse = True)]
+        return [a[0] for a in sorted([(i, e) for i, e in enumerate(self.counters) if e >= self.threshold], key=lambda tup: tup[1], reverse = True)]

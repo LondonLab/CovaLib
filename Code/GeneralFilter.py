@@ -21,7 +21,8 @@ class GeneralFilter:
         self.rlist = Result_List.Result_List(self.extract)
 
     def listFilter(self, f_list):
+        cwd = os.getcwd()
         os.chdir(self.folder_name)
         self.rlist.writeIndexListObj(f_list, self.out_name)
-        subprocess.call([Paths.DOCKBASE + "analysis/getposes.py", "-f", self.out_name, "--ranks", self.out_name, "-o", self.filter + "/poses.mol2"])
-        os.chdir('../')
+        subprocess.call([Paths.DOCKBASE + "analysis/getposes.py", "-d", "../", "-i", "../", "-l", "1000", "-f", self.out_name, "--ranks", self.out_name, "-o", self.filter + "/poses.mol2"])
+        os.chdir(cwd)

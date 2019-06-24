@@ -12,9 +12,9 @@ def main(name, argv):
 		return
 	file_name = 'extract_all.sort.uniq.txt'
 	if argv[1] == '1':
-		folder_name = 'big_molecules'
-		function = Result_List.Compound.getBigMols
-		out_name = folder_name + '/extract_all.big.txt'
+		folder_name = 'relative_all'
+		function = Result_List.Compound.getRelScore
+		out_name = folder_name + '/extract_all.rel_small.txt'
 	PyUtils.create_folder(folder_name)
         rlist = Result_List.Result_List(file_name)
         rlist.sortList(function, folder_name + '/eff_score.txt', int(argv[0]))
@@ -22,7 +22,7 @@ def main(name, argv):
 	        nlist = Result_List.Result_List(argv[1])
 		rlist.removeSubList(nlist, 500)'''
         rlist.writeList(out_name, int(argv[0]))
-	subprocess.call([Paths.DOCKBASE + "analysis/getposes.py", "-f", out_name, "--ranks", out_name, "-o", folder_name + "/poses.mol2"])
+	subprocess.call([Paths.DOCKBASE + "analysis/getposes.py", "-f", out_name, "--ranks", out_name, "-l", "0", "-o", folder_name + "/poses.mol2"])
 
 def print_usage(name):
 	print "Usage : " + name + " <number> <which filter (1 for Big molecules)>"

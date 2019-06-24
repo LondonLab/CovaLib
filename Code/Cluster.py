@@ -21,6 +21,36 @@ class Cluster:
 				cur_job.write(line)
 			cur_job.close()
 			subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
+        def runSingleDepend(self, command, depend_jobs_file):
+                with open(depend_jobs_file, 'r') as f:
+                        depend_jobs = [line.split()[0] for line in f]
+                if(self.typ == "WEXAC"):
+                        subprocess.call(["bsub", "-u", "/dev/null", "-R", "rusage[mem=1024]", "-q", "new-all.q", "-o", "out", "-e", "err", command])
+                if(self.typ == "CHEM"):
+                        job_file = "job_submission.sh"
+                        cur_job = open(job_file, 'w')
+                        for line in cjob.sendjob_text[:1]:
+                                cur_job.write(line)
+                        for line in depend_jobs:
+                                cur_job.write('#PBS -W depend=afterany:' + ":".join(depend_jobs))
+                        for line in cjob.sendjob_text[1:7]:
+                                cur_job.write(line)
+                        cur_job.write(cjob.sendjob_text[7] + '\'' + command + '\'')
+                        for line in cjob.sendjob_text[8:]:
+                                cur_job.write(line)
+                        cur_job.close()
+                        subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
+
+	def runSingleShell(self, command):
+		job_file = "job_submission.sh"
+		cur_job = open(job_file, 'w')
+		for line in cjob.sendjob_text[:7]:
+			cur_job.write(line)
+		cur_job.write(command + '\n')
+		for line in cjob.sendjob_text[9:]:
+			cur_job.write(line)
+		cur_job.close()
+		subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
 	def runCommands(self, commands):
 		for command in commands:
 			self.runSingle(command)

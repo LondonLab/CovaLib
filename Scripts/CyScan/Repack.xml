@@ -26,7 +26,7 @@
     </APPLY_TO_POSE>
     <PROTOCOLS>
       #Add mover=CysMutate />
-      <Add mover=repack_mover />
+      #Add mover=repack_mover />
     </PROTOCOLS>
     <OUTPUT />
 </ROSETTASCRIPTS>

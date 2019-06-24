@@ -5,26 +5,27 @@ sys.path.append(os.path.dirname(sys.argv[0]) + "/../")
 from Code import *
 
 def main(name, argv):
-        if(not len(argv) == 1):
+        if len(argv) == 0:
                 print_usage(name)
                 return
-	PyUtils.create_folder('poses')
-	i = 0
-	j = 1
+	PyUtils.create_folder(argv[0][:-5])
+	i = 0 #-1
+	#if len(argv) == 1:
+	#	i = 0
 	inside = False
         for line in open(argv[0], 'r'):
 		if not(inside) and line[0] == '#':
 			i += 1
 			inside = True
-			#poses_f = open('poses/' + line[47:-3]  + '.mol2', 'w')
-			poses_f = open('poses/' + str(j) + '.mol2', 'w')
-			j += 1
+			if len(argv) == 1 or str(i) in argv[1:]:
+				poses_f = open(argv[0][:-5] + '/' + str(i) + '.mol2', 'w')
 		if not line[0] == '#':
 			inside = False
-		poses_f.write(line)
+		if len(argv) == 1 or str(i) in argv[1:]:
+			poses_f.write(line)
 
 def print_usage(name):
-        print "Usage : " + name + " <poses file name>"
+        print "Usage : " + name + " <poses file name> <index(s),(optional)>"
 
 if __name__ == "__main__":
     main(sys.argv[0], sys.argv[1:])

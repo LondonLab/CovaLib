@@ -13,6 +13,7 @@ def main(name, argv):
 		print_usage(name)
 		return
 	clu = Cluster.Cluster()
+	benchmark = False
 	kinase = False
 	if len(argv) == 7 or (len(argv) == 8 and argv[-1] == 'True'):
 		kinase = True
@@ -68,13 +69,14 @@ def main(name, argv):
 				shutil.move(state_file, rot_folder + 'rot.pdb')
 				shutil.copy(argv[3], rot_folder)
 				os.chdir(rot_folder)
+				#REPACKING
 				subprocess.call([Paths.ROSETTA + "/bin/rosetta_scripts.default.linuxgccrelease", "-s", 'rot.pdb', "-parser:protocol", Paths.SCRIPTS + "CyScan/Repack.xml", "-out:prefix", "CYS_" + res + "_", "-overwrite", "-parser:script_vars", "pos=" + res + argv[1], '@' + Paths.SCRIPTS + 'CyScan/relax.flags'])
 				#put each one in its own folder
 				shutil.move('CYS_' + res + '_rot_0001.pdb', 'rec.pdb')
 				shutil.move('CYS_' + res + '_score.sc', 'score.sc')
 				os.chdir('../..')
 		os.chdir(folder)
-		for rot in os.listdir('./')[1:]:
+		for rot in os.listdir('./'):
 			os.chdir(rot)
 			#Preparing and tarting (if tart file exists)
 			if run_mode == '1':
@@ -104,12 +106,16 @@ def main(name, argv):
 				commands.append(' '.join(['python', Paths.SCRIPTS + 'DOCKovalentTask.py', argv[5], argv[4], 'True']))
 			#Combine and get rank
 			if run_mode == '3':
-				subprocess.call(['python', Paths.SCRIPTS + 'Combine.py', argv[5], 'False'])
-				os.chdir(argv[5])
-				subprocess.call(['python', Paths.SCRIPTS + 'FilterList.py', '1', './', 'BIG_MOLS', 'True'])
-				shutil.copy('BIG_MOLS/poses.mol2', './')
-				shutil.copy('BIG_MOLS/extract_all.sort.uniq.txt', './')
-				os.chdir('../')
+				#Normal Combine
+				subprocess.call(['python', Paths.SCRIPTS + 'Combine.py', argv[5], 'True'])
+				#Special getposes
+				#os.chdir(argv[5])
+				#print([Paths.DOCKBASE + "analysis/getposes.py -l 500"])
+				#subprocess.call([Paths.DOCKBASE + "analysis/getposes.py", "-l", "1000"])
+				#subprocess.call(['python', Paths.SCRIPTS + 'FilterList.py', '1', './', 'BIG_MOLS', 'True'])
+				#shutil.copy('BIG_MOLS/poses.mol2', './')
+				#shutil.copy('BIG_MOLS/extract_all.sort.uniq.txt', './')
+				#os.chdir('../')
 				if tart_bool:
 					res_list = []
 					if kinase:
@@ -119,8 +125,9 @@ def main(name, argv):
 					for line in f_tart:
 						res_list.append(line.split()[2])
 					f_tart.close()
+					#print res_list
 					commands.append(' '.join(['python', Paths.SCRIPTS + 'HBondsFilter.py', argv[5]] + res_list))
-					print (' '.join(['python', Paths.SCRIPTS + 'HBondsFilter.py', argv[5]] + res_list))
+					#print (' '.join(['python', Paths.SCRIPTS + 'HBondsFilter.py', argv[5]] + res_list))
 				else:
 					commands.append(' '.join(['python', Paths.SCRIPTS + 'HBondsFilter.py', argv[5]] + residues))
 				'''with open('Docking/extract_all.sort.uniq.txt', 'r') as f_score:
@@ -135,7 +142,7 @@ def main(name, argv):
 			os.chdir('../')
 		os.chdir('../')
 	dir_f.close()
-	if kinase and run_mode == '3':
+	if kinase and run_mode == '3' and benchmark:
 		with open('res_scores', 'w') as res_f:
 			res_f.write(str(sorted(score)) + '\n')
 			subprocess.call(["python", Paths.SCRIPTS + "/rmsd.py", "-ref", "xtal-lig.pdb", "-in", "CYS" + true_res + "/Docking/poses.mol2", "-overlay", "false"])
@@ -145,6 +152,7 @@ def main(name, argv):
 			res_f.write('Rmsd is: ' + rmsd)
 		os.remove('rmsd.txt')
 	if run_mode == '1' or run_mode == '2' or run_mode == '3':
+		print commands
 		clu.runDirCommands('dirlist', commands)
 
 def change_charges(list_kin, t_atoms, ind):

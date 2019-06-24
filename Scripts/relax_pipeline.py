@@ -15,8 +15,8 @@ def main(name, argv):
     imol2 = argv[0]
     ismi = argv[0][:-4] + 'smi'
     ipdb = argv[0][:-4] + 'pdb'
-    subprocess.call(["convert.py", imol2, ismi])
-    subprocess.call(["convert.py", imol2, ipdb])
+    subprocess.call(["python", "/home/danielza/CovaLib/Scripts/ChemChem/convert.py", imol2, ismi])
+    subprocess.call(["python", "/home/danielza/CovaLib/Scripts/ChemChem/convert.py", imol2, ipdb])
     if len(argv) > 6:
         ismi = argv[6]
     with open(ipdb, 'r') as fpdb:
@@ -29,12 +29,16 @@ def main(name, argv):
                 fpdb.write(line)
     confs = "all_confs.mol2"
     f = open(confs, 'w')
-    subprocess.call(["cxcalc", "conformers", "-m", "250", "-f", "mol2", ismi], stdout = f)
-    subprocess.call([Paths.SCRIPTS + "rmsd.py", "-in", confs, "-ref", imol2, "-out", "moved_confs.mol2"])
+#    subprocess.call(["cxcalc", "conformers", "-m", "250", "-f", "mol2", ismi], stdout = f)
+#    subprocess.call([Paths.SCRIPTS + "rmsd.py", "-in", confs, "-ref", imol2, "-out", "moved_confs.mol2"])
     fout = open('charges.mol2', 'w')
-    fin = open('moved_confs.mol2', 'r')
-    subprocess.call([Paths.ROSETTA + "src/apps/public/ligand_docking/assign_charges.py"], stdin = fin, stdout = fout)
-    subprocess.call([Paths.ROSETTA + "scripts/python/public/molfile_to_params.py", "-n", argv[4],  "-p", argv[4], "charges.mol2"])
+#    fin = open('moved_confs.mol2', 'r')
+    fin = open('all_confs.mol2', 'r')
+    print "Im here"
+#    subprocess.call([Paths.ROSETTA + "src/apps/public/ligand_docking/assign_charges.py"], stdin = fin, stdout = fout)
+#    subprocess.call([Paths.ROSETTA + "scripts/python/public/molfile_to_params.py", "-n", argv[4],  "-p", argv[4], "charges.mol2"])
+    subprocess.call([Paths.ROSETTA + "scripts/python/public/molfile_to_params.py", "-n", argv[4],  "-p", argv[4], "all_confs.mol2"])
+    print "Im here2"
     f_conf_pdb = open(argv[4] + '_confs.pdb', 'w')
     files = []
     for i in range(1,251):
@@ -49,6 +53,7 @@ def main(name, argv):
         if 'C' + argv[3] + ' ' in line:
             cov_id = i - empty_lines
             break
+    print "Im here"
     if len(argv) > 6:
         min_rmsd = 'min_rmsd.mol2'
         min_pdb = 'min_rmsd.pdb'

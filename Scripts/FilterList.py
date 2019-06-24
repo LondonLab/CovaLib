@@ -13,7 +13,7 @@ def main(name, argv):
 	file_name = 'extract_all.sort.uniq.txt'
 	folder_name = argv[2]
 	if argv[0] == '1':
-		function = Result_List.Compound.getBigMols
+		function = Result_List.Compound.getRelScore
 	if argv[0] == '2':
 		function = Result_List.Compound.getSmallPolarity
 	out_name = folder_name + '/' + file_name

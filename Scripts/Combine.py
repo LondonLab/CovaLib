@@ -14,7 +14,7 @@ def main(name, argv):
 	os.chdir(argv[0])
 	subprocess.call([Paths.DOCKBASE + "analysis/extract_all.py", "--done"])
 	if len(argv) == 1 or (len(argv) == 2 and argv[1] == 'True'):
-		subprocess.call([Paths.DOCKBASE + "analysis/getposes.py"])
+		subprocess.call([Paths.DOCKBASE + "analysis/getposes.py", "-l", "1000"])
 
 def print_usage(name):
 	print "Usage : " + name + " <folder name> <extract poses (Default = True)>"

@@ -24,7 +24,7 @@ class Compound:
     def getRelScore(self):
         return self.score / self.heavy_atoms
     def getRelSmall(self):
-        if self.heavy_atoms < 10:
+        if self.heavy_atoms >= 41:
             return self.score / self.heavy_atoms
         else:
             return 100
@@ -48,8 +48,8 @@ class Result_List:
         for line in f:
             self.res_list.append(Compound(line.split()))
             i += 1
-            if i == 500:
-                break
+            #if i == 7000:
+            #    break
         f.close()
     def getList(self):
         return self.res_list

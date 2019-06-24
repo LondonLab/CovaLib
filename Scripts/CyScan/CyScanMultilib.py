@@ -17,7 +17,7 @@ def main(name, argv):
 	with open(argv[4], 'r') as f_lib:
 		for line in f_lib:
 			#commands.append(' '.join(['python', Paths.SCRIPTS + 'CyScan/CyScan.py'] + argv[:4] + line.split() + [argv[5], 'False']))
-			subprocess.call(['python', Paths.SCRIPTS + 'CyScan/CyScan.py'] + argv[:4] + line.split() + [argv[5], 'False'])
+			subprocess.call(['python', Paths.SCRIPTS + 'CyScan/CyScan.py'] + argv[:4] + line.split() + [argv[5], 'True'])
 			if argv[5] == '1' or argv[5] == '0':
 				break
 	'''if argv[5] == '1':
