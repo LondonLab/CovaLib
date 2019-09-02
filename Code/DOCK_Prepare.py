@@ -53,3 +53,23 @@ class DOCK_Prepare:
             shutil.copyfile(self.rec, self.fixed_rec)
         if(not os.path.exists(self.fixed_lig)):
             shutil.copyfile(self.lig, self.fixed_lig)
+    @staticmethod
+    def changeNumSave(num_save):
+        INDOCK = "INDOCK"
+        old = open(INDOCK, 'r')
+        new = open(INDOCK + '2', 'w')
+        for i in range(27):
+            line = old.readline()
+            new.write(line)
+        for i in range(2):
+            line = old.readline()
+            new.write(line[:-2] + str(num_save) + "\n")
+        for i in range(15):
+            line = old.readline()
+            new.write(line)
+        for line in old:
+            new.write(line)
+        old.close()
+        new.close()
+        os.remove(INDOCK)
+        os.rename(INDOCK + '2', INDOCK)

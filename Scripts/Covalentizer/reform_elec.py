@@ -20,7 +20,7 @@ def main(name, argv):
     #creating RDKit Mol objects
     molecules_1 = [Chem.MolFromSmiles(line) for line in lines_1]
     molecules_1 = [m for m in molecules_1 if m is not None]
-
+    
     f = open(argv[2], 'w')
     write_mols = []
     # calculate reactions
@@ -28,8 +28,8 @@ def main(name, argv):
         #find all valid molecules for a specific reaction
         reactents_smarts = rxn[0].GetReactants()
         has_patt_1 = [m.HasSubstructMatch(reactents_smarts[0]) for m in molecules_1]
-        if not has_patt_1[0]:
-            continue
+        #if not has_patt_1[0]:
+        #    continue
         reactent_option_1 = [m for i,m in enumerate(molecules_1) if has_patt_1[i]]
         #print len(reactent_option_1)
 
@@ -37,7 +37,7 @@ def main(name, argv):
             #calculate the product for the reaction for these two compounds
             products = rxn[0].RunReactants((mol1,))
             # write to file
-            for i, pro in enumerate(products):
+            for i, pro in enumerate(products[:1]):
                 write_mols.append((Chem.MolToSmiles(pro[0], isomericSmiles=True), str(j+1) + '_' + str(i+1) + '_' + rxn[1]))
                 #f.write('%s\t%s_%s_%s\n' % (Chem.MolToSmiles(pro[0]), str(j+1), rxn[1], str(i+1)))
     for i,m in enumerate(set(write_mols)):

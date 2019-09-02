@@ -27,7 +27,8 @@ def main(name, argv):
 	for i, p in enumerate(poses):
 		is_ok = True
 		for query in queries_atoms:
-			if len([atom for atom in p if atom.get_atom() == query[0] and numpy.linalg.norm(query[1] - atom.get_coords()) <= query[2]]) == 0:
+			#if len([atom for atom in p if atom.get_atom() == query[0] and numpy.linalg.norm(query[1] - atom.get_coords()) <= query[2]]) == 0:
+                        if len([atom for atom in p if atom.get_atom() in ['N', 'O'] and numpy.linalg.norm(query[1] - atom.get_coords()) <= query[2]]) == 0:
 				is_ok = False
 				break
 		if is_ok:

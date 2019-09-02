@@ -4,10 +4,33 @@ import sys
 import PyUtils
 import socket
 import chemfarm_job_submission as cjob
+from subprocess import Popen, PIPE
+import time
+
 class Cluster:
 	def __init__(self):
 		#self.getServer()
 		self.typ = "CHEM"
+        @staticmethod
+        def wait(job_ids, timeout = -1):
+                jobs_done = False
+                i = 0
+                while not jobs_done:
+                        if i == timeout:
+                                break
+                        time.sleep(10)
+                        all_done = True
+                        p = Popen(['/gpopt/altair/pbs/default/bin/qstat'], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                        jobs_running = [line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line]
+                        for line in job_ids:
+                                if line in jobs_running:
+                                        all_done = False
+                        if all_done:
+                                jobs_done = True
+                        else:
+                                print "Not done yet"
+                        i += 1
+
 	def runSingle(self, command):
 		if(self.typ == "WEXAC"):
 			subprocess.call(["bsub", "-u", "/dev/null", "-R", "rusage[mem=1024]", "-q", "new-all.q", "-o", "out", "-e", "err", command])
@@ -20,7 +43,9 @@ class Cluster:
 			for line in cjob.sendjob_text[8:]:
 				cur_job.write(line)
 			cur_job.close()
-			subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
+			#subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
+                        p = Popen(["/gpopt/altair/pbs/default/bin/qsub", job_file], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                        return [line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line][0]
         def runSingleDepend(self, command, depend_jobs_file):
                 with open(depend_jobs_file, 'r') as f:
                         depend_jobs = [line.split()[0] for line in f]
@@ -52,27 +77,32 @@ class Cluster:
 		cur_job.close()
 		subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
 	def runCommands(self, commands):
-		for command in commands:
-			self.runSingle(command)
+		jobs = []
+                for command in commands:
+			jobs.append(self.runSingle(command))
+                return jobs
 	def runDirSingle(self, dirname, command):
 		PyUtils.create_folder(dirname[:-1])
 		curr = os.getcwd()
 		os.chdir(dirname[:-1])
-		self.runSingle(command)
+		job = self.runSingle(command)
 		os.chdir(curr)
+                return job
 	def runDirCommands(self, dirlist, commands):
 		self.checkList(dirlist, commands)
 		f = open(dirlist, 'r')
 		lines = f.readlines()
+                jobs = []
 		for dirname, command in zip(lines, commands):
-			self.runDirSingle(dirname, command)
+			jobs.append(self.runDirSingle(dirname, command))
 		f.close()
+                return jobs
 	def runJobs(self, dirlist, command):
 		f = open(dirlist, 'r')
 		lines = f.readlines()
 		commands = [command] * len(lines)
 		f.close()
-		self.runDirCommands(dirlist, commands)
+		return self.runDirCommands(dirlist, commands)
 		
         def runJobsArgs(self, dirlist, command, arglist):
 		self.checkList(dirlist, arglist)
@@ -85,7 +115,7 @@ class Cluster:
 		commands = []
 		for arg in arglist:
 			commands.append(command + ' ' + str(arg))
-		self.runCommands(commands)
+		return self.runCommands(commands)
         def runJobsName(self, dirlist, command):
                 with open(dirlist) as f:
                         lines = f.read().splitlines()

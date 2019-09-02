@@ -9,6 +9,14 @@ from pymol import cmd, stored, time
 import random
 harmless_hetatm = ['PO4', 'SO4', 'K', 'NA', 'CA', 'OXM', 'OXL', 'MN', 'MAE', 'CO', 'FE']
 
+def get_distance(file_name, res1, atom1, res2, atom2):
+    pymol.finish_launching()
+    cmd.delete('all')
+    cmd.load(file_name)
+    cmd.select('atom1', 'resn ' + res1 + ' and name ' + atom1)
+    cmd.select('atom2', 'resn ' + res2 + ' and name ' + atom2)
+    print cmd.get_distance('atom1', 'atom2')
+
 def center_coords(file_name):
     pymol.finish_launching()
     cmd.delete('all')
@@ -75,6 +83,7 @@ def env_cysteine(file_name, allowed_het):
     stored.list=[]
     cmd.iterate('org', "stored.list.append((resn))")
     het = list(set(stored.list))
+    return_table = []
     #with open(het_list, 'r') as f:
     #    het = [l.split()[0] for l in f]
     with open(allowed_het, 'r') as f:
@@ -83,7 +92,7 @@ def env_cysteine(file_name, allowed_het):
         if not h in allowed:
             continue
         cmd.select('lig', 'resn ' + h + ' and not elem H')
-        cmd.select('env', 'lig around 6 and resn CYS and elem S')
+        cmd.select('env', 'lig around 10 and resn CYS and elem S')
         stored.list=[]
         cmd.iterate('env', "stored.list.append((resi, chain))")
         res_chain = set(stored.list)
@@ -94,17 +103,14 @@ def env_cysteine(file_name, allowed_het):
             if cmd.count_atoms('neighbors') == 0:
                 new_res_chain.append(c)
         res_chain = new_res_chain
-        if len(res_chain) > 0:#cmd.count_atoms('env') != 0:
-            #stored.list=[]
-            #cmd.iterate('env', "stored.list.append((resi))")
-            #resi = list(set(stored.list))
-            #stored.list=[]
-            #cmd.iterate('env', "stored.list.append((resi, chain))")
-            #res_chain = list(set(stored.list))
+        if len(res_chain) > 0:
             resi = set([c[0] for c in res_chain])
             for r in resi:
                 entry = [c for c in res_chain if c[0] == r][0]
-                print h + '\t' + entry[0] + '\t' + entry[1]
+                if is_lig_single(h, entry[1]):
+                    print h + '\t' + entry[0] + '\t' + entry[1]
+                    return_table.append([h, entry[0], entry[1]])
+    return return_table
 
 def save_residue(file_name, resi, save_file):
     pymol.finish_launching()
@@ -137,6 +143,7 @@ def seperate_rec_lig(file_name, mol, chain, res):
     center_coords_rec('rec')
     cmd.save('rec.pdb', 'rec')
     cmd.save('xtal-lig.pdb', 'lig')
+    cmd.remove(file_name[:-4])
 
 def seperate_rec_lig(file_name, mol, chain):
     pymol.finish_launching()
@@ -172,20 +179,42 @@ def scene_photo(rec, xtal, covalentized, photo_name):
     cmd.select('lig', 'org')
     if cmd.count_atoms('lig') == 0:
         return 0
-    cmd.hide('(hydro)')
     cmd.set('valence', 0)
-    cmd.orient('lig')
     cmd.color('cyan', xtal.split('.')[0])
-    cmd.color('magenta', covalentized.split('.')[0])
-    cmd.util.cnc('all')
+    cmd.select('cov', covalentized.split('.')[0])
+    cmd.select('cysteine', 'br. ' + covalentized.split('.')[0] + ' around 2 and resn CYS')
+    cmd.select('cys_cov', 'cysteine or cov')
+    cmd.save('tmp.pdb', 'cys_cov')
+    cmd.load('tmp.pdb')
+    cmd.hide('(hydro)')
+    cmd.delete('cov')
+    cmd.select('cov', 'tmp and org')
+    cmd.select('cysteine', 'tmp and resn cys')
+    cmd.color('white', 'cysteine')
+    cmd.color('magenta', 'cov')
     cmd.color('green', rec.split('.')[0])
+    cmd.util.cnc('all')
+    cmd.select('all_mols', 'tmp or ' + xtal.split('.')[0])
+    cmd.orient('all_mols')
     pnghack('./tmp.png')
     os.rename('tmp0001.png', photo_name)
+    os.remove('tmp.pdb')
 
 def is_lig_single(file_name, mol, chain):
     pymol.finish_launching()
     cmd.delete('all')
     cmd.load(file_name)
+    cmd.select('lig', 'resn ' + mol + ' and chain ' + chain)
+    if cmd.count_atoms('lig') == 0:
+        return False
+    stored.list=[]
+    cmd.iterate('lig', "stored.list.append((resi))")
+    num_of_lig = len(set(stored.list))
+    if not num_of_lig == 1:
+        return False
+    return True
+
+def is_lig_single(mol, chain):
     cmd.select('lig', 'resn ' + mol + ' and chain ' + chain)
     if cmd.count_atoms('lig') == 0:
         return False
@@ -435,12 +464,13 @@ def pymol_mutate(file_name, chain, res_index, number, mutant):
 
 def pymol_mutate(file_name, chain, res_index):
     pymol.finish_launching()
-    cmd.delete(file_name[:-4])
+    cmd.delete('all')
     selection = chain + '/' + res_index + '/'
     mutant = 'CYS'
     cmd.wizard("mutagenesis")
     pdb = file_name[:-4]
     cmd.load(file_name)
+    cmd.remove('not (alt ''+A)')
 
     cmd.select('mut', 'resi ' + res_index + ' and chain ' + chain)
     if cmd.count_atoms('mut') == 0:
