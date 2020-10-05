@@ -13,23 +13,30 @@ def main(name, argv):
                 print_usage(name)
                 return
 
+        f = open('log.txt', 'w')
+        f.write('Covalentizer has started.\n')
+
         curr_dir = os.getcwd()
         cluster = Cluster.Cluster()
-        f = open('log.txt', 'w')
         with open('lig.name', 'w') as lig_f:
                 lig_f.write(argv[1] + '\n')
+        f.write('Looking for cysteine\'s tiol within 6A of any of the ligand atoms.\n')
         res = PYMOLUtils.env_cysteine(argv[0], 'lig.name')
         with open('res.txt', 'w') as f:
                 for r in res:
                         f.write("\t".join(r) + '\n')
         if len(res) == 0:
-                f.write('Did not find cysteines which are close to the ligand.')
+                f.write('Did not find cysteines which are close to the ligand.\n')
                 f.close()
+                return
+
+        f.write('Create folders for the different cysteines and rotamers.\n')
         CysUtils.cysteine_folders(argv[0])
         dirlist = glob.glob("CYS*/*/ROT*/")
         with open('dirlist', 'w') as dirf:
                 for line in dirlist:
                         dirf.write(line + '\n')
+        f.write('Start preparing the structures for docking.\n')
         prepare_jobs = cluster.runJobs('dirlist', './prepare.sh')
         os.mkdir('Ligands/')
         ligands = {}
@@ -54,11 +61,11 @@ def main(name, argv):
         for d in dirlist:
                 lig = d.split('/')[1]
                 os.chdir(d)
-                DOCK_Prepare.changeNumSave(10)
+                DOCK_Prepare.DOCK_Prepare.changeNumSave(10)
                 p = Popen(['python', os.environ["SCRIPTS"] + '/DOCKovalentTask.py', 'CovLib', ligands[lig], 'True'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
                 dock_jobs += [line for line in p.communicate()[0].split('\n') if 'pbs' in line]
                 os.chdir(curr_dir)
-        Cluster.Cluster.wait(dock_jobs) 
+        Cluster.Cluster.wait(dock_jobs)
         f.close()
         os.system(os.environ["SCRIPTS"] + '/Covalentizer/Final_Scripts/combine.sh')
         os.mkdir('Results')
