@@ -4,6 +4,7 @@ import sys
 import PyUtils
 import socket
 import chemfarm_job_submission as cjob
+import chemfarm_job_batch as cbatch
 from subprocess import Popen, PIPE
 import time
 
@@ -18,9 +19,9 @@ class Cluster:
                 while not jobs_done:
                         if i == timeout:
                                 break
-                        time.sleep(10)
+                        time.sleep(1000)
                         all_done = True
-                        p = Popen(['/gpopt/altair/pbs/default/bin/qstat'], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                        p = Popen(['/opt/pbs/bin/qstat'], stdout=PIPE, stderr=PIPE, stdin=PIPE)
                         jobs_running = [line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line]
                         for line in job_ids:
                                 if line in jobs_running:
@@ -44,7 +45,7 @@ class Cluster:
 				cur_job.write(line)
 			cur_job.close()
 			#subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
-                        p = Popen(["/gpopt/altair/pbs/default/bin/qsub", job_file], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                        p = Popen(["/opt/pbs/bin/qsub", job_file], stdout=PIPE, stderr=PIPE, stdin=PIPE)
                         return [line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line][0]
         def runSingleDepend(self, command, depend_jobs_file):
                 with open(depend_jobs_file, 'r') as f:
@@ -64,7 +65,7 @@ class Cluster:
                         for line in cjob.sendjob_text[8:]:
                                 cur_job.write(line)
                         cur_job.close()
-                        subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
+                        subprocess.call(["/opt/pbs/bin/qsub", job_file])
 
 	def runSingleShell(self, command):
 		job_file = "job_submission.sh"
@@ -75,7 +76,7 @@ class Cluster:
 		for line in cjob.sendjob_text[9:]:
 			cur_job.write(line)
 		cur_job.close()
-		subprocess.call(["/gpopt/altair/pbs/default/bin/qsub", job_file])
+		subprocess.call(["/opt/pbs/bin/qsub", job_file])
 	def runCommands(self, commands):
 		jobs = []
                 for command in commands:
@@ -103,7 +104,52 @@ class Cluster:
 		commands = [command] * len(lines)
 		f.close()
 		return self.runDirCommands(dirlist, commands)
-		
+        def runBatchJobs(self, dirlist, command, batch_size=12, mem='2000mb'):
+                curr = os.getcwd()
+                f = open(dirlist, 'r')
+                lines = [line[:-1] for line in f.readlines()]
+                f.close()
+                jobs = []
+                batch_list = [lines[i:i+batch_size] for i in range(0, len(lines), batch_size)]
+                for i, batch in enumerate(batch_list):
+                        job_file = "job_batch_" + str(i) + ".sh"
+                        cur_job = open(job_file, 'w')
+                        for line in cbatch.sendjob_text[:4]:
+                                cur_job.write(line)
+                        cur_job.write(str(len(batch)))
+                        cur_job.write(cbatch.sendjob_text[4])
+                        cur_job.write(mem)
+                        for line in cbatch.sendjob_text[5:]:
+                                cur_job.write(line)
+                        for dirname in batch:
+                                cur_job.write('cd ' + dirname + '\n')
+                                cur_job.write(command + ' &\n')
+                                cur_job.write('cd ' + curr + '\n')
+                        cur_job.write('wait\n')
+                        cur_job.close()
+                        p = Popen(["qsub", job_file], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                        jobs.append([line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line][0])
+                return jobs
+        def runBatchCommands(self, commands, batch_size=12, mem='2000mb'):
+                jobs = []
+                batch_list = [commands[i:i+batch_size] for i in range(0, len(commands), batch_size)]
+                for i, batch in enumerate(batch_list):
+                        job_file = "job_batch_" + str(i) + ".sh"
+                        cur_job = open(job_file, 'w')
+                        for line in cbatch.sendjob_text[:4]:
+                                cur_job.write(line)
+                        cur_job.write(str(len(batch)))
+                        cur_job.write(cbatch.sendjob_text[4])
+                        cur_job.write(mem)
+                        for line in cbatch.sendjob_text[5:]:
+                                cur_job.write(line)
+                        for command in batch:
+                                cur_job.write(command + ' &\n')
+                        cur_job.write('wait\n')
+                        cur_job.close()
+                        p = Popen(["qsub", job_file], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                        jobs.append([line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line][0])
+                return jobs
         def runJobsArgs(self, dirlist, command, arglist):
 		self.checkList(dirlist, arglist)
 		commands = []

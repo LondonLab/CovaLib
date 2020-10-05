@@ -1,5 +1,4 @@
 import os
-import PyUtils
 import subprocess
 import sys
 import __main__
@@ -8,6 +7,22 @@ import pymol
 from pymol import cmd, stored, time
 import random
 harmless_hetatm = ['PO4', 'SO4', 'K', 'NA', 'CA', 'OXM', 'OXL', 'MN', 'MAE', 'CO', 'FE']
+
+def publication_figure(session, pic_file_name, w = 5000, h = 5000):
+    pymol.finish_launching()
+    cmd.delete('all')
+    cmd.load(session)
+    pnghack(pic_file_name, w, h)
+
+def align_chain(ref, query, chain, out):
+    pymol.finish_launching()
+    cmd.delete('all')
+    cmd.load(ref)
+    cmd.load(query)
+    ref_name = ref.split('/')[-1].split('.')[0]
+    query_name = query.split('/')[-1].split('.')[0]
+    cmd.align(query_name + ' and chain ' + chain, ref_name + ' and chain ' + chain)
+    cmd.save(out, query_name)
 
 def get_distance(file_name, res1, atom1, res2, atom2):
     pymol.finish_launching()
@@ -92,7 +107,7 @@ def env_cysteine(file_name, allowed_het):
         if not h in allowed:
             continue
         cmd.select('lig', 'resn ' + h + ' and not elem H')
-        cmd.select('env', 'lig around 10 and resn CYS and elem S')
+        cmd.select('env', 'lig around 6 and resn CYS and elem S')
         stored.list=[]
         cmd.iterate('env', "stored.list.append((resi, chain))")
         res_chain = set(stored.list)
@@ -111,6 +126,22 @@ def env_cysteine(file_name, allowed_het):
                     print h + '\t' + entry[0] + '\t' + entry[1]
                     return_table.append([h, entry[0], entry[1]])
     return return_table
+
+def get_rec_plus_lig(pdb_id, lig, rec_file, lig_file, new_chain):
+    pymol.finish_launching()
+    cmd.delete('all')
+    cmd.fetch(pdb_id)
+    center_coords_rec(pdb_id)
+    cmd.select('lig', 'resn lig')
+    stored.list=[]
+    cmd.iterate('org', "stored.list.append((chain))")
+    chain = list(set(stored.list))[0][0]
+    cmd.select('lig', 'resn ' + lig + ' and chain ' + chain)
+    cmd.select('rec', 'poly and chain ' + chain)
+    cmd.alter('rec', 'chain=\'' + new_chain + '\'')
+    cmd.save(lig_file, 'lig')
+    cmd.save(rec_file, 'rec')
+    os.system('rm *.cif')
 
 def save_residue(file_name, resi, save_file):
     pymol.finish_launching()
