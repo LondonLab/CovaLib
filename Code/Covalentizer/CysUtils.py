@@ -5,7 +5,7 @@ sys.path.append(os.environ["COVALIB"])
 from Code import *
 
 def cysteine_folders(pdb_file):
-    with open('res10.txt', 'r') as f:
+    with open('res.txt', 'r') as f:
         lines = [line.split() for line in f]
     cysteines = set([(line[1], line[2]) for line in lines])
     for i,cys in enumerate(cysteines):

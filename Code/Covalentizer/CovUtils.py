@@ -43,7 +43,7 @@ def multi_react(argv):
             uniq_smiles.append(m[0])
     f.close()
 
-def multi_react(argv, linker_smiles):
+def multi_react_linker(argv, linker_smiles):
     with open(argv[0], 'r') as f:
         reactions = [line.split() for line in f.readlines()]
     rxns = [[rdChemReactions.ReactionFromSmarts(r[0]), r[1]] for r in reactions]
@@ -120,4 +120,4 @@ def build_library(in_smile, frags, lib, rules = os.environ["COVALIB"] + "/Code/C
     if not linker_lib:
         multi_react([rules, argv[1], argv[2]])
     else:
-        multi_react([rules, argv[1], argv[2]], linker_smiles)
+        multi_react_linker([rules, argv[1], argv[2]], linker_smiles)

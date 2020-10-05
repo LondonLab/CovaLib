@@ -10,8 +10,8 @@ for i in `wc -l data.txt | awk '$1 > 0' | awk '{print $1}'` ; do mkdir web_files
 cat data.txt | awk '{print "cp poses/"$5".mol2 web_files/"$1".mol2 ; echo \""$2"\" > web_files/"$1".smi ; echo "$4" > web_files/"$1".rmsd"}' > make_web_folder.sh ; chmod 777 make_web_folder.sh ; ./make_web_folder.sh
 cp ../rec.pdb web_files/
 cp ../xtal-lig.pdb web_files/
-cat ../../../res.txt | awk '{print $2}' > web_files/cys_position.txt
-cat ../../../res.txt | awk '{print $3}' > web_files/chain.txt
+head -1 ../../../res.txt | awk '{print $2}' > web_files/cys_position.txt
+head -1 ../../../res.txt | awk '{print $3}' > web_files/chain.txt
 cd web_files/
 for i in *.smi ; do python $SCRIPTS/Covalentizer/reform_elec.py $SCRIPTS/Covalentizer/reform_elec.re $i tmp.smi ; cat tmp.smi | awk '{print $1}' > $i ; python $SCRIPTS/Covalentizer/draw_smile.py $i ; done ; rm tmp.smi
 cd ../
