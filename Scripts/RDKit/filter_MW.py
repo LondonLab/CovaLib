@@ -22,7 +22,8 @@ def main(name, argv):
             if molecule[0] == None:
                 continue
             if Descriptors.MolWt(molecule[0]) <= MW and rdMolDescriptors.CalcNumRotatableBonds(molecule[0]) <= RB:
-                print line_s[0] + "\t" + line_s[1]
+                print Chem.MolToSmiles(molecule[0]) + "\t" + line_s[1]
+                #print line_s[0] + "\t" + line_s[1]
 #            else:
 #                print Descriptors.MolWt(molecule[0]) <= MW
 #                print rdMolDescriptors.CalcNumRotatableBonds(molecule[0])
