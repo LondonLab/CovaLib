@@ -7,9 +7,9 @@ from rdkit import DataStructs
 from rdkit import Chem
 from rdkit.Chem.Fingerprints import FingerprintMols
 
-rmsd_treshold = 2.0
-coverage_treshold = 0.8
-tanimoto_treshold = 0.5
+rmsd_treshold = 1.2#2.0
+coverage_treshold = 0.8#0.8
+tanimoto_treshold = 0.85#0.7#0.5
 
 def finger_print(smiles):
 	return FingerprintMols.FingerprintMol(Chem.MolFromSmiles(smiles))
@@ -45,6 +45,7 @@ def main(name, argv):
 			cluster_rep.append(i)
 			cluster_fps.append(fp)
 			clusters.append([i])
+        clusters.sort(key=len, reverse=True)
 	os.mkdir('clusters')
 	for i, clu in enumerate(clusters):
 		poses.print_poses(clu, 'clusters/' + str(i) + '.mol2')

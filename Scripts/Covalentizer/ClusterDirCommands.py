@@ -10,7 +10,8 @@ def main(name, argv):
                 return
 
 	cluster = Cluster.Cluster()
-	cluster.runJobs(argv[0], argv[1])
+	#cluster.runJobs(argv[0], argv[1])
+	cluster.runBatchJobs(argv[0], argv[1], mem='10000mb')
 
 def print_usage(name):
         print "Usage : " + name + " <dirlist> <command>"

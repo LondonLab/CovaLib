@@ -2,7 +2,7 @@
 #Code review by 
 import shutil
 import subprocess
-import os
+import os, sys
 import Paths
 import PyUtils
 
@@ -14,6 +14,10 @@ class DOCK_Prepare:
         self.folder = os.path.dirname(os.path.abspath(rec)) + "/"
         self.fixed_rec = self.folder + "rec.pdb"
         self.fixed_lig = self.folder + "xtal-lig.pdb"
+        if os.path.isdir(self.folder + "working/"):
+            shutil.rmtree(self.folder +"working/")
+        if os.path.isdir(self.folder + "dockfiles/"):
+            shutil.rmtree(self.folder +"dockfiles/")
         self.cov = cov
         self.cov_index = cov_index
         self.hg = HG

@@ -13,7 +13,8 @@ def main(name, argv):
         with open(argv[0], 'r') as f:
                 lines = [line[:-1] for line in f]
 
-	cluster.runCommands(lines)
+	#cluster.runCommands(lines)
+	cluster.runBatchCommands(lines, mem='4000mb')
 
 def print_usage(name):
         print "Usage : " + name + " <command list>"
