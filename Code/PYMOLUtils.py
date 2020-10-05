@@ -75,7 +75,7 @@ def is_pure_env(file_name, mol, chain, res):
     else:
         return False
 
-def env_cysteine(file_name, allowed_het):
+def env_cysteine(file_name, allowed_het, dist = 6):
     pymol.finish_launching()
     cmd.delete('all')
     cmd.load(file_name)
@@ -92,14 +92,14 @@ def env_cysteine(file_name, allowed_het):
         if not h in allowed:
             continue
         cmd.select('lig', 'resn ' + h + ' and not elem H')
-        cmd.select('env', 'lig around 10 and resn CYS and elem S')
+        cmd.select('env', 'lig around ' + str(dist) + ' and resn CYS and elem S')
         stored.list=[]
         cmd.iterate('env', "stored.list.append((resi, chain))")
         res_chain = set(stored.list)
         new_res_chain = []
         for c in res_chain:
             cmd.select('sul', 'resi ' + c[0] + ' and chain ' + c[1] + ' and elem S')
-            cmd.select('neighbors', 'not name CB and neighbor sul')
+            cmd.select('neighbors', 'not name CB and not elem H and neighbor sul')
             if cmd.count_atoms('neighbors') == 0:
                 new_res_chain.append(c)
         res_chain = new_res_chain
