@@ -14,6 +14,7 @@ class Cluster:
 		self.typ = "CHEM"
         @staticmethod
         def wait(job_ids, timeout = -1):
+                print job_ids
                 jobs_done = False
                 i = 0
                 while not jobs_done:
@@ -23,6 +24,7 @@ class Cluster:
                         all_done = True
                         p = Popen(['/opt/pbs/bin/qstat'], stdout=PIPE, stderr=PIPE, stdin=PIPE)
                         jobs_running = [line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line]
+                        print jobs_running
                         for line in job_ids:
                                 if line in jobs_running:
                                         all_done = False
@@ -31,6 +33,13 @@ class Cluster:
                         else:
                                 print "Not done yet"
                         i += 1
+                
+                #Terminating remaining jobs in case limit has been reached
+                if not jobs_done:
+                        for job in job_ids:
+                                if job in jobs_running:
+                                        p = Popen(['/opt/pbs/bin/qdel', job], stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                return jobs_done
 
 	def runSingle(self, command):
 		if(self.typ == "WEXAC"):
@@ -125,26 +134,6 @@ class Cluster:
                                 cur_job.write('cd ' + dirname + '\n')
                                 cur_job.write(command + ' &\n')
                                 cur_job.write('cd ' + curr + '\n')
-                        cur_job.write('wait\n')
-                        cur_job.close()
-                        p = Popen(["qsub", job_file], stdout=PIPE, stderr=PIPE, stdin=PIPE)
-                        jobs.append([line.split()[0] for line in p.stdout.read().split('\n') if 'pbs' in line][0])
-                return jobs
-        def runBatchCommands(self, commands, batch_size=12, mem='2000mb'):
-                jobs = []
-                batch_list = [commands[i:i+batch_size] for i in range(0, len(commands), batch_size)]
-                for i, batch in enumerate(batch_list):
-                        job_file = "job_batch_" + str(i) + ".sh"
-                        cur_job = open(job_file, 'w')
-                        for line in cbatch.sendjob_text[:4]:
-                                cur_job.write(line)
-                        cur_job.write(str(len(batch)))
-                        cur_job.write(cbatch.sendjob_text[4])
-                        cur_job.write(mem)
-                        for line in cbatch.sendjob_text[5:]:
-                                cur_job.write(line)
-                        for command in batch:
-                                cur_job.write(command + ' &\n')
                         cur_job.write('wait\n')
                         cur_job.close()
                         p = Popen(["qsub", job_file], stdout=PIPE, stderr=PIPE, stdin=PIPE)
