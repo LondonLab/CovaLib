@@ -22,9 +22,9 @@ def main(name, argv):
                 lig_f.write(argv[1] + '\n')
         f.write('Looking for cysteine\'s tiol within 6A of any of the ligand atoms.\n')
         res = PYMOLUtils.env_cysteine(argv[0], 'lig.name')
-        with open('res.txt', 'w') as f:
+        with open('res.txt', 'w') as fres:
                 for r in res:
-                        f.write("\t".join(r) + '\n')
+                        fres.write("\t".join(r) + '\n')
         if len(res) == 0:
                 f.write('Did not find cysteines which are close to the ligand.\n')
                 f.close()
