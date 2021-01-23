@@ -14,7 +14,7 @@ def main(name, argv):
                 return
 
         cluster = Cluster.Cluster()
-        cluster.runBatchJobs(argv[0], "python /home/covalentizer/CovaLib/Scripts/Covalentizer/AutoProcess/process_pdb_multiple_lig.py rec.pdb ligands.txt")
+        cluster.runBatchJobs(argv[0], "python " + os.environ["COVALIB"] + "/Scripts/Covalentizer/AutoProcess/process_pdb_multiple_lig.py rec.pdb ligands.txt")
 
 def print_usage(name):
         print "Usage : " + name + " <dirlist>"

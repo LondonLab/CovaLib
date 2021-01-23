@@ -14,7 +14,7 @@ def main(name, argv):
                 return
 
         cluster = Cluster.Cluster()
-        cluster.runSingle("python /home/covalentizer/CovaLib/Scripts/Covalentizer/AutoProcess/process_pdb_small.py " + argv[0] + " " + argv[1])
+        cluster.runSingle("python " + os.environ["COVALIB"] + "/Scripts/Covalentizer/AutoProcess/process_pdb_small.py " + argv[0] + " " + argv[1])
 
 def print_usage(name):
         print "Usage : " + name + " <pdb_file> <lig_file>"
