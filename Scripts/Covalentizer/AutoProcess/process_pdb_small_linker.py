@@ -75,7 +75,7 @@ def main(name, argv):
         os.chdir('Ligands')
         for lig in ligands:
                 os.chdir(lig)
-                CovUtils.build_library('smile.smi', 'frags.smi', 'lib.smi', rules = os.environ["COVALIB"] + "/Code/Covalentizer/di_amine_rules.re", linker_lib = True, linker_smiles = os.environ["COVALIB"] + "/Code/Covalentizer/di_amine_acrylamide.smi")
+                CovUtils.build_library('smile.smi', 'frags.smi', 'lib.smi', rules = os.environ["COVALIB"] + "/Code/Covalentizer/di_amine_rules.re", linker_lib = True, linker_smiles = os.environ["COVALIB"] + "/Code/Covalentizer/di_amine_linkers.smi")
                 if os.stat('frags.smi').st_size == 0 or os.stat('smile.smi').st_size == 0 or os.stat('lib.smi').st_size == 0:
                         ligands_to_remove.append(lig)
                         os.chdir('../')
